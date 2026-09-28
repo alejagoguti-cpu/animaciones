@@ -17,9 +17,10 @@ export const Phone: React.FC<{
         height,
         borderRadius: 96,
         padding: 18,
+        border: "2px solid rgba(255,255,255,0.12)",
         background: "linear-gradient(145deg, #3a3a3e 0%, #111114 50%, #2a2a2e 100%)",
         boxShadow:
-          `0 60px 140px rgba(0,0,0,0.7), 0 0 90px ${accent.alpha(0.35)}, inset 0 0 0 2px rgba(255,255,255,0.12)`,
+          `0 60px 140px rgba(0,0,0,0.7), 0 0 90px ${accent.alpha(0.35)}`,
         ...style,
       }}
     >

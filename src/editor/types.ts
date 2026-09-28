@@ -72,6 +72,21 @@ export type TextProps = {
 
 export type ChatMessageData = { from: "cliente" | "bitaxus"; text: string; time: string };
 
+// Punto de un trazo vectorial. Coordenadas normalizadas (0–1) dentro de la
+// caja del elemento; `in`/`out` son las manijas de la curva (opcionales).
+export type VectorNode = { x: number; y: number; in?: { x: number; y: number }; out?: { x: number; y: number } };
+
+export type VectorProps = {
+  nodes: VectorNode[];
+  closed: boolean;
+  fill: string;
+  // Si tiene valor, el relleno es un degradado de `fill` a `fill2`.
+  fill2: string;
+  stroke: string;
+  strokeWidth: number;
+  glow: boolean;
+};
+
 export type ElementData =
   | (ElementBase & { type: "text"; props: TextProps })
   | (ElementBase & { type: "image"; props: { src: string; fit: "cover" | "contain"; radius: number } })
@@ -81,6 +96,7 @@ export type ElementData =
       type: "shape";
       props: { shape: "rect" | "circle"; fill: string; radius: number; borderColor: string; borderWidth: number };
     })
+  | (ElementBase & { type: "vector"; props: VectorProps })
   | (ElementBase & {
       type: "pill";
       props: { text: string; size: number; font: "display" | "body"; glow: boolean; shine: boolean };

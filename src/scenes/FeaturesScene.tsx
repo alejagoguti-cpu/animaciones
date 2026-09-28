@@ -38,7 +38,7 @@ export const FeaturesScene: React.FC<PromoProps["escena3Beneficios"]> = ({ titul
                     height: 110,
                     flexShrink: 0,
                     borderRadius: 55,
-                    background: "radial-gradient(circle at 30% 30%, #fff, #bdbdbd)",
+                    background: "linear-gradient(145deg, #ffffff, #bdbdbd)",
                     color: accent.deep(),
                     fontSize: 56,
                     fontWeight: 900,

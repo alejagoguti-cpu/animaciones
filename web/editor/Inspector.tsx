@@ -63,9 +63,11 @@ type ElProps = {
   onDuplicate: () => void;
   onLayer: (dir: "up" | "down" | "top" | "bottom") => void;
   textRef: React.Ref<HTMLTextAreaElement>;
+  editingPoints: boolean;
+  onEditPoints: (on: boolean) => void;
 };
 
-export const ElementInspector: React.FC<ElProps> = ({ el, sceneDuration, onChange, onDelete, onDuplicate, onLayer, textRef }) => {
+export const ElementInspector: React.FC<ElProps> = ({ el, sceneDuration, onChange, onDelete, onDuplicate, onLayer, textRef, editingPoints, onEditPoints }) => {
   const set = <K extends keyof ElementData>(k: K, v: ElementData[K]) => onChange((e) => ({ ...e, [k]: v }) as ElementData);
   const setProp = (k: string, v: unknown) =>
     onChange((e) => ({ ...e, props: { ...(e.props as Record<string, unknown>), [k]: v } }) as ElementData);
@@ -94,7 +96,7 @@ export const ElementInspector: React.FC<ElProps> = ({ el, sceneDuration, onChang
         </div>
       </div>
 
-      <TypeFields el={el} setProp={setProp} textRef={textRef} />
+      <TypeFields el={el} setProp={setProp} textRef={textRef} editingPoints={editingPoints} onEditPoints={onEditPoints} />
 
       <div className="group">
         <h3>Animación</h3>
@@ -132,8 +134,39 @@ const TypeFields: React.FC<{
   el: ElementData;
   setProp: (k: string, v: unknown) => void;
   textRef: React.Ref<HTMLTextAreaElement>;
-}> = ({ el, setProp, textRef }) => {
+  editingPoints: boolean;
+  onEditPoints: (on: boolean) => void;
+}> = ({ el, setProp, textRef, editingPoints, onEditPoints }) => {
   switch (el.type) {
+    case "vector": {
+      const p = el.props;
+      return (
+        <div className="group">
+          <h3>Vector</h3>
+          <button className={`btn small ${editingPoints ? "primary" : ""}`} style={{ marginBottom: 10 }} onClick={() => onEditPoints(!editingPoints)}>
+            {editingPoints ? "✓ Listo con los puntos" : "✎ Editar puntos (doble clic)"}
+          </button>
+          {editingPoints && (
+            <p className="muted" style={{ marginTop: 0, lineHeight: 1.5 }}>
+              Arrastra los puntos blancos para mover y las manijas rojas para curvar. Alt + clic en un punto lo vuelve curvo o recto; Supr borra el
+              punto seleccionado.
+            </p>
+          )}
+          <Check label="Trazo cerrado (con relleno)" value={p.closed} onChange={(v) => setProp("closed", v)} />
+          {p.closed && (
+            <>
+              <ColorField label="Relleno" value={p.fill === "transparent" ? "#000000" : p.fill} onChange={(v) => setProp("fill", v)} />
+              <Check label="Sin relleno" value={p.fill === "transparent"} onChange={(v) => setProp("fill", v ? "transparent" : "#c1121f")} />
+              <Check label="Degradado" value={!!p.fill2} onChange={(v) => setProp("fill2", v ? "#6e0a10" : "")} />
+              {p.fill2 && <ColorField label="Segundo color" value={p.fill2} onChange={(v) => setProp("fill2", v)} />}
+            </>
+          )}
+          <ColorField label="Borde" value={p.stroke} onChange={(v) => setProp("stroke", v)} />
+          <NumberField label="Grosor del borde" value={p.strokeWidth} min={0} onChange={(v) => setProp("strokeWidth", v)} />
+          <Check label="Brillo del color de acento" value={p.glow} onChange={(v) => setProp("glow", v)} />
+        </div>
+      );
+    }
     case "text": {
       const p = el.props;
       return (

@@ -1,4 +1,5 @@
 import { colors } from "../theme";
+import { VECTOR_PRESETS } from "./vector";
 import {
   Background,
   Design,
@@ -57,7 +58,7 @@ export const newElement = (
   type: ElementType,
   format: Format,
   sceneDuration: number,
-  extra?: { src?: string; width?: number; height?: number; textKind?: Parameters<typeof textPreset>[0] },
+  extra?: { src?: string; width?: number; height?: number; textKind?: Parameters<typeof textPreset>[0]; preset?: string },
 ): ElementData => {
   const { width: W, height: H } = FORMAT_SIZE[format];
   const center = (w: number, h: number) => ({ x: Math.round((W - w) / 2), y: Math.round((H - h) / 2), w, h });
@@ -104,6 +105,27 @@ export const newElement = (
             { from: "cliente", text: "Quiero programar un recaudo.", time: "10:44 AM" },
             { from: "bitaxus", text: "¡Claro! ¿Cuánto vas a cobrar y cuál es el concepto?", time: "10:45 AM" },
           ],
+        },
+      };
+    }
+    case "vector": {
+      const preset = VECTOR_PRESETS.find((p) => p.id === extra?.preset) ?? VECTOR_PRESETS[0];
+      const w = 360;
+      const h = Math.max(8, Math.round(w * (preset.ratio ?? 1)));
+      return {
+        ...b,
+        type,
+        name: preset.name,
+        ...center(w, h),
+        enter: { kind: "pop", duration: 0.6 },
+        props: {
+          nodes: structuredClone(preset.nodes),
+          closed: preset.closed,
+          fill: preset.outline ? "transparent" : BRAND.red,
+          fill2: "",
+          stroke: preset.outline ? BRAND.white : "rgba(255,255,255,0.5)",
+          strokeWidth: preset.outline ? 18 : 4,
+          glow: false,
         },
       };
     }
@@ -156,6 +178,7 @@ export const changeFormat = (d: Design, format: Format): Design => {
         if (scaled.type === "text") scaled.props = { ...scaled.props, size: Math.round(scaled.props.size * s) };
         if (scaled.type === "pill") scaled.props = { ...scaled.props, size: Math.round(scaled.props.size * s) };
         if (scaled.type === "counter") scaled.props = { ...scaled.props, size: Math.round(scaled.props.size * s) };
+        if (scaled.type === "vector") scaled.props = { ...scaled.props, strokeWidth: scaled.props.strokeWidth * s };
         return scaled;
       }),
     })),

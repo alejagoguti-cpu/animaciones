@@ -25,7 +25,7 @@ export const DesignPreview: React.FC<{ design: Design; frame?: number }> = ({ de
   );
 };
 
-export const DesignList: React.FC<{ email: string }> = ({ email }) => {
+export const DesignList: React.FC = () => {
   const [rows, setRows] = useState<DesignRow[] | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -75,10 +75,6 @@ export const DesignList: React.FC<{ email: string }> = ({ email }) => {
         <a className="btn ghost small" href={`${import.meta.env.BASE_URL}studio/`} target="_blank" rel="noreferrer">
           Estudio Remotion ↗
         </a>
-        <span className="muted">{email}</span>
-        <button className="btn small" onClick={() => supabase.auth.signOut()}>
-          Salir
-        </button>
       </header>
 
       <div className="list-body">

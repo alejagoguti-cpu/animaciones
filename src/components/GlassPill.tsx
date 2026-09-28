@@ -25,8 +25,8 @@ export const GlassPill: React.FC<{
           : colors.glass,
         backdropFilter: "blur(14px)",
         boxShadow: glow
-          ? `0 0 60px ${accent.alpha(0.35)}, inset 0 1px 0 rgba(255,255,255,0.25)`
-          : "inset 0 1px 0 rgba(255,255,255,0.2)",
+          ? `0 0 60px ${accent.alpha(0.35)}`
+          : "none",
         overflow: "hidden",
         ...style,
       }}

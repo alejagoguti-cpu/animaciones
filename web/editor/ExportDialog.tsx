@@ -66,8 +66,7 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2 className="display">Exportar video</h2>
         <p className="muted" style={{ margin: 0 }}>
-          MP4 · {width}×{height} · {(frames / FPS).toFixed(1)} s. Se genera aquí mismo en tu navegador; deja esta pestaña abierta
-          mientras tanto.
+          MP4 · {width}×{height} · {(frames / FPS).toFixed(1)} s. Se genera aquí mismo en tu navegador. Deja esta pestaña abierta y a la vista mientras tanto: si cambias de pestaña o minimizas, el navegador lo pausa.
         </p>
         {(state === "rendering" || state === "checking") && (
           <>

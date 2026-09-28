@@ -1,5 +1,6 @@
 import React from "react";
-import { Easing, Img, interpolate, OffthreadVideo, staticFile, useCurrentFrame } from "remotion";
+import { Easing, Img, interpolate, staticFile, useCurrentFrame } from "remotion";
+import { Video } from "@remotion/media";
 import { useAccent } from "../../accent";
 import { ChatBubble, ChatMessage } from "../../components/ChatBubble";
 import { GlassPill } from "../../components/GlassPill";
@@ -8,6 +9,7 @@ import { Phone } from "../../components/Phone";
 import { colors, fonts } from "../../theme";
 import { ElementData, FPS, TextProps } from "../types";
 import { getAnimState } from "./animation";
+import { buildPath } from "../vector";
 
 // Las rutas "assets/..." viven en public/; las subidas son URLs completas.
 export const resolveSrc = (src: string) => {
@@ -53,10 +55,12 @@ const ElementBody: React.FC<{ el: ElementData; localFrame: number }> = ({ el, lo
       );
     case "video":
       return (
-        <OffthreadVideo
+        <Video
           src={resolveSrc(el.props.src)}
           muted={el.props.muted}
-          style={{ width: "100%", height: "100%", objectFit: el.props.fit, borderRadius: el.props.radius }}
+          loop
+          objectFit={el.props.fit}
+          style={{ width: "100%", height: "100%", borderRadius: el.props.radius, overflow: "hidden" }}
         />
       );
     case "logo":
@@ -76,6 +80,8 @@ const ElementBody: React.FC<{ el: ElementData; localFrame: number }> = ({ el, lo
       );
     case "pill":
       return <PillBody el={el} localFrame={localFrame} />;
+    case "vector":
+      return <VectorBody el={el} />;
     case "card":
       return <CardBody el={el} />;
     case "phone":
@@ -349,5 +355,42 @@ const CounterBody: React.FC<{ el: Extract<ElementData, { type: "counter" }>; loc
         </span>
       </div>
     </div>
+  );
+};
+
+const VectorBody: React.FC<{ el: Extract<ElementData, { type: "vector" }> }> = ({ el }) => {
+  const accent = useAccent();
+  const p = el.props;
+  const d = buildPath(p.nodes, p.closed, el.w, el.h);
+  const id = `g${el.id}`;
+  const fill = p.closed ? (p.fill2 ? `url(#${id})` : p.fill) : "none";
+  return (
+    <svg
+      width={el.w}
+      height={el.h}
+      viewBox={`0 0 ${el.w} ${el.h}`}
+      style={{
+        overflow: "visible",
+        display: "block",
+        filter: p.glow ? `drop-shadow(0 0 20px ${accent.alpha(0.9)})` : undefined,
+      }}
+    >
+      {p.fill2 && (
+        <defs>
+          <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor={p.fill} />
+            <stop offset="1" stopColor={p.fill2} />
+          </linearGradient>
+        </defs>
+      )}
+      <path
+        d={d}
+        fill={fill}
+        stroke={p.strokeWidth > 0 ? p.stroke : "none"}
+        strokeWidth={p.strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 };

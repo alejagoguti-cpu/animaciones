@@ -13,10 +13,12 @@ Se publican solos cada vez que se sube un cambio a `main` (ver `.github/workflow
 
 Código en `web/` (la app) y `src/editor/` (formato de los diseños y cómo se dibujan en video).
 
-- **Acceso:** se entra con un enlace que llega al correo. Solo pueden entrar los correos de la tabla `allowed_emails` en Supabase (proyecto `bitaxus-animaciones`).
+- **Acceso libre:** sin inicio de sesión. Cualquiera con el enlace puede crear, editar y borrar diseños (proyecto Supabase `bitaxus-animaciones`).
 - **Guardado:** cada diseño se guarda solo en la tabla `designs`; los archivos subidos van al bucket `uploads`.
 - **Lienzo:** arrastrar, redimensionar (Shift mantiene proporción), rotar, imanes al centro y a los bordes (Alt los desactiva).
 - **Elementos:** textos (Belamor / Montserrat), logo, botón de vidrio, tarjeta, teléfono con chat, contador, formas, imágenes y videos.
+- **Vectores:** pluma para dibujar (clic = punto, arrastrar = curva), 16 formas e íconos, relleno/degradado/borde, y edición de puntos con doble clic.
+- **Doble clic:** en textos y botones se escribe directo sobre el lienzo; en vectores, edita los puntos.
 - **Animaciones:** entrada, salida y movimiento continuo por elemento; cuándo aparece y se va se ajusta en la línea de tiempo.
 - **Escenas:** varias escenas con transición y duración propias; formatos 9:16, 4:5, 1:1 y 16:9.
 - **Exportar:** el MP4 se genera en el navegador (Chrome o Edge).

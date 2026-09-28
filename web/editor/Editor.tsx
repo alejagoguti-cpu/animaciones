@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { PlayerRef } from "@remotion/player";
-import { changeFormat, cloneScene, newElement, newScene, uid } from "../../src/editor/factory";
+import { BRAND, changeFormat, cloneScene, newElement, newScene, uid } from "../../src/editor/factory";
+import { normalizeNodes } from "../../src/editor/vector";
 import { sceneAtFrame, sceneFrames, sceneStarts, totalFrames } from "../../src/editor/timing";
-import { Design, ElementData, ElementType, Format, FPS } from "../../src/editor/types";
+import { Design, ElementData, ElementType, Format, FPS, VectorNode } from "../../src/editor/types";
 import { go, LOGO } from "../App";
 import type { SaveState } from "../EditorPage";
 import { updateElement, updateScene, useDesignStore } from "../store";
@@ -40,6 +41,9 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const [tab, setTab] = useState<Parameters<typeof LeftPanel>[0]["tab"]>("plantillas");
   const [pickingBg, setPickingBg] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [penActive, setPenActive] = useState(false);
+  const [editingPointsId, setEditingPointsId] = useState<string | null>(null);
+  const [inlineId, setInlineId] = useState<string | null>(null);
   const playerRef = useRef<PlayerRef | null>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
   const first = useRef(true);
@@ -61,6 +65,12 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const sceneLen = frames[safeIdx];
   const sceneFrame = Math.max(0, Math.min(sceneLen - 1, globalFrame - sceneStart));
   const selected = scene.elements.find((e) => e.id === selectedId) ?? null;
+
+  // Al cambiar de selección se sale de los modos de edición.
+  useEffect(() => {
+    if (editingPointsId && editingPointsId !== selectedId) setEditingPointsId(null);
+    if (inlineId && inlineId !== selectedId) setInlineId(null);
+  }, [selectedId]);
 
   const seekScene = (f: number) => {
     const target = sceneStart + Math.max(0, Math.min(sceneLen - 1, f));
@@ -188,9 +198,63 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     else p.play();
   };
 
+  // Doble clic: texto y botones se escriben sobre el lienzo; los vectores
+  // entran a edición de puntos; el resto enfoca su panel de propiedades.
   const editText = (id: string) => {
+    const el = scene.elements.find((x) => x.id === id);
+    if (!el || el.locked) return;
     setSelectedId(id);
-    setTimeout(() => textRef.current?.focus(), 30);
+    playerRef.current?.pause();
+    if (el.type === "text" || el.type === "pill") {
+      setInlineId(id);
+      return;
+    }
+    if (el.type === "vector") {
+      setEditingPointsId(id);
+      return;
+    }
+    setTimeout(() => {
+      const target = textRef.current ?? (document.querySelector(".right .group:nth-child(2) input, .right .group:nth-child(2) textarea") as HTMLElement | null);
+      target?.focus();
+    }, 30);
+  };
+
+  const onPenDone = (abs: VectorNode[], closed: boolean) => {
+    const { box, nodes } = normalizeNodes(abs);
+    const base = newElement("vector", design.format, scene.duration);
+    const el: ElementData = {
+      ...base,
+      ...box,
+      name: "Vector",
+      enter: { kind: "fade", duration: 0.5 },
+      props: {
+        nodes,
+        closed,
+        fill: closed ? BRAND.red : "transparent",
+        fill2: "",
+        stroke: BRAND.white,
+        strokeWidth: closed ? 4 : 12,
+        glow: false,
+      },
+    } as ElementData;
+    setScene((s) => ({ ...s, elements: [...s.elements, el] }));
+    setSelectedId(el.id);
+    setPenActive(false);
+  };
+
+  // Tras mover puntos, la caja se ajusta al nuevo contorno.
+  const onPointsEnd = () => {
+    commit((d) =>
+      updateElement(d, safeIdx, editingPointsId ?? "", (el) => {
+        if (el.type !== "vector") return el;
+        const abs = el.props.nodes.map((n) => {
+          const t = (q: { x: number; y: number }) => ({ x: el.x + q.x * el.w, y: el.y + q.y * el.h });
+          return { ...t(n), in: n.in && t(n.in), out: n.out && t(n.out) };
+        });
+        const { box, nodes } = normalizeNodes(abs);
+        return { ...el, ...box, props: { ...el.props, nodes } };
+      }),
+    );
   };
 
   // Atajos de teclado.
@@ -218,6 +282,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         e.preventDefault();
         togglePlay();
       } else if (e.key === "Escape") {
+        if (editingPointsId) return setEditingPointsId(null);
         setSelectedId(null);
         setPickingBg(false);
       } else if (selected && e.key.startsWith("Arrow") && !selected.locked) {
@@ -270,6 +335,14 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         onAsset={onAsset}
         onColor={onColor}
         pickingBackground={pickingBg}
+        penActive={penActive}
+        onPen={(on) => {
+          setPenActive(on);
+          if (on) {
+            setSelectedId(null);
+            playerRef.current?.pause();
+          }
+        }}
       />
 
       <Stage
@@ -286,6 +359,14 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         onPlayingChange={setPlaying}
         loopRange={loopScene ? [sceneStart, sceneStart + sceneLen - 1] : null}
         onEditText={editText}
+        penActive={penActive}
+        onPenDone={onPenDone}
+        onPenCancel={() => setPenActive(false)}
+        editingPointsId={editingPointsId}
+        onPointsEnd={onPointsEnd}
+        inlineId={inlineId}
+        onInlineCommit={(id, text) => setEl(id, (x) => ({ ...x, props: { ...(x.props as object), text } }) as ElementData)}
+        onInlineClose={() => setInlineId(null)}
       />
 
       <aside className="right">
@@ -299,6 +380,8 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
             onDuplicate={duplicateSelected}
             onLayer={moveLayer}
             textRef={textRef}
+            editingPoints={editingPointsId === selected.id}
+            onEditPoints={(on) => setEditingPointsId(on ? selected.id : null)}
           />
         ) : (
           <SceneInspector

@@ -94,7 +94,7 @@ const ChatHeader: React.FC<{ name: string }> = ({ name }) => {
         width: 84,
         height: 84,
         borderRadius: 42,
-        background: `radial-gradient(circle at 30% 30%, ${accent.color}, ${accent.deep()})`,
+        background: `linear-gradient(145deg, ${accent.color}, ${accent.deep()})`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

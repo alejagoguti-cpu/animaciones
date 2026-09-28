@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BRAND, textPreset } from "../../src/editor/factory";
 import { TEMPLATES } from "../../src/editor/templates";
+import { buildPath, VECTOR_PRESETS } from "../../src/editor/vector";
 import { Design, ElementType } from "../../src/editor/types";
 import { publicUrl, supabase, UPLOADS_BUCKET } from "../supabase";
 
@@ -17,12 +18,13 @@ export type Asset = {
 const BASE = import.meta.env.BASE_URL;
 const assetUrl = (file: string) => (/^https?:/.test(file) ? file : `${BASE}${file}`);
 
-type Tab = "plantillas" | "texto" | "elementos" | "marca" | "assets" | "subidas";
+type Tab = "plantillas" | "texto" | "elementos" | "vectores" | "marca" | "assets" | "subidas";
 
 const TABS: [Tab, string, string][] = [
   ["plantillas", "▦", "Plantillas"],
   ["texto", "T", "Texto"],
   ["elementos", "◇", "Elementos"],
+  ["vectores", "✎", "Vectores"],
   ["marca", "◉", "Marca"],
   ["assets", "▣", "Assets"],
   ["subidas", "⇪", "Subidas"],
@@ -40,7 +42,9 @@ const CATEGORY: Record<string, string> = {
 type Props = {
   tab: Tab;
   setTab: (t: Tab) => void;
-  onAdd: (type: ElementType, extra?: { src?: string; width?: number; height?: number; textKind?: Parameters<typeof textPreset>[0] }) => void;
+  onAdd: (type: ElementType, extra?: { src?: string; width?: number; height?: number; textKind?: Parameters<typeof textPreset>[0]; preset?: string }) => void;
+  penActive: boolean;
+  onPen: (on: boolean) => void;
   onTemplate: (d: Design, mode: "replace" | "append") => void;
   onAsset: (a: Asset) => void;
   onColor: (c: string) => void;
@@ -61,6 +65,7 @@ export const LeftPanel: React.FC<Props> = (p) => (
       {p.tab === "plantillas" && <Templates onTemplate={p.onTemplate} />}
       {p.tab === "texto" && <TextTab onAdd={p.onAdd} />}
       {p.tab === "elementos" && <ElementsTab onAdd={p.onAdd} />}
+      {p.tab === "vectores" && <VectorsTab onAdd={p.onAdd} penActive={p.penActive} onPen={p.onPen} />}
       {p.tab === "marca" && <BrandTab onAdd={p.onAdd} onColor={p.onColor} />}
       {p.tab === "assets" && <AssetsTab onAsset={p.onAsset} picking={p.pickingBackground} />}
       {p.tab === "subidas" && <UploadsTab onAsset={p.onAsset} picking={p.pickingBackground} />}
@@ -316,3 +321,37 @@ const UploadsTab: React.FC<{ onAsset: (a: Asset) => void; picking: boolean }> = 
     </>
   );
 };
+
+const VectorsTab: React.FC<{ onAdd: Props["onAdd"]; penActive: boolean; onPen: (on: boolean) => void }> = ({ onAdd, penActive, onPen }) => (
+  <>
+    <section>
+      <h3>Dibujar</h3>
+      <button className={`btn ${penActive ? "primary" : ""}`} style={{ width: "100%" }} onClick={() => onPen(!penActive)}>
+        ✎ {penActive ? "Dibujando… (Enter para terminar)" : "Pluma: dibujar un vector"}
+      </button>
+      <p className="muted" style={{ lineHeight: 1.5 }}>
+        Clic para poner puntos rectos; clic y arrastrar para curvas. Clic en el primer punto cierra la forma. Enter o doble clic termina; Esc
+        cancela. Después, doble clic sobre el vector para editar sus puntos.
+      </p>
+    </section>
+    <section>
+      <h3>Formas e íconos</h3>
+      <div className="asset-grid" style={{ gridTemplateColumns: "1fr 1fr 1fr" }}>
+        {VECTOR_PRESETS.map((v) => (
+          <button key={v.id} className="asset" title={v.name} onClick={() => onAdd("vector", { preset: v.id })} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg viewBox="-8 -8 116 116" width="70%" height="70%" style={{ overflow: "visible" }}>
+              <path
+                d={buildPath(v.nodes, v.closed, 100, 100 * (v.ratio ?? 1) > 100 ? 100 : 100 * (v.ratio ?? 1))}
+                fill={v.outline || !v.closed ? "none" : "#c1121f"}
+                stroke="#fff"
+                strokeWidth={v.outline ? 8 : 2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        ))}
+      </div>
+    </section>
+  </>
+);

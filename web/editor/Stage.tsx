@@ -1,10 +1,13 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Player, PlayerRef } from "@remotion/player";
 import { DesignVideo } from "../../src/editor/render/DesignVideo";
 import { getAnimState } from "../../src/editor/render/animation";
 import { totalFrames } from "../../src/editor/timing";
-import { Design, ElementData, FORMAT_SIZE, FPS } from "../../src/editor/types";
+import { Design, ElementData, FORMAT_SIZE, FPS, VectorNode } from "../../src/editor/types";
 import { updateElement } from "../store";
+import { InlineText } from "./InlineText";
+import { PenLayer } from "./PenLayer";
+import { PointEditor } from "./PointEditor";
 
 type Props = {
   design: Design;
@@ -20,6 +23,14 @@ type Props = {
   onPlayingChange: (playing: boolean) => void;
   loopRange: [number, number] | null;
   onEditText: (id: string) => void;
+  penActive: boolean;
+  onPenDone: (nodes: VectorNode[], closed: boolean) => void;
+  onPenCancel: () => void;
+  editingPointsId: string | null;
+  onPointsEnd: () => void;
+  inlineId: string | null;
+  onInlineCommit: (id: string, text: string) => void;
+  onInlineClose: () => void;
 };
 
 type Drag =
@@ -67,10 +78,21 @@ export const Stage: React.FC<Props> = (p) => {
   const scene = p.design.scenes[p.sceneIdx];
   const total = totalFrames(p.design);
 
+  // Mientras se escribe sobre el lienzo, el texto del video se oculta para no verlo doble.
+  const shown = useMemo(
+    () =>
+      p.inlineId
+        ? updateElement(p.design, p.sceneIdx, p.inlineId, (e) => ({ ...e, opacity: 0 }))
+        : p.design,
+    [p.design, p.inlineId, p.sceneIdx],
+  );
+
   const onPointerDown = (e: React.PointerEvent, el: ElementData, kind: "move" | "rotate" | string) => {
     e.stopPropagation();
     p.onSelect(el.id);
     if (el.locked) return;
+    // Editando puntos o texto, la caja no se arrastra.
+    if (kind === "move" && (p.editingPointsId === el.id || p.inlineId === el.id)) return;
     try {
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
     } catch {
@@ -183,7 +205,7 @@ export const Stage: React.FC<Props> = (p) => {
           <Player
             ref={p.playerRef}
             component={DesignVideo}
-            inputProps={{ design: p.design }}
+            inputProps={{ design: shown }}
             compositionWidth={W}
             compositionHeight={H}
             durationInFrames={total}
@@ -212,7 +234,30 @@ export const Stage: React.FC<Props> = (p) => {
                   onPointerDown={(e) => onPointerDown(e, el, "move")}
                   onDoubleClick={() => p.onEditText(el.id)}
                 >
-                  {selected && (
+                  {selected && p.inlineId === el.id && (el.type === "text" || el.type === "pill") && (
+                    <InlineText
+                      el={el}
+                      scale={scale}
+                      onCommit={(text) => p.onInlineCommit(el.id, text)}
+                      onClose={p.onInlineClose}
+                    />
+                  )}
+                  {selected && p.editingPointsId === el.id && el.type === "vector" && (
+                    <PointEditor
+                      el={el}
+                      scale={scale}
+                      onNodes={(nodes) =>
+                        p.preview((des) =>
+                          updateElement(des, p.sceneIdx, el.id, (x) => (x.type === "vector" ? { ...x, props: { ...x.props, nodes } } : x)),
+                        )
+                      }
+                      onEnd={() => {
+                        p.endPreview();
+                        p.onPointsEnd();
+                      }}
+                    />
+                  )}
+                  {selected && p.editingPointsId !== el.id && p.inlineId !== el.id && (
                     <>
                       <span className="el-label">{el.name ?? el.type}</span>
                       {!el.locked &&
@@ -228,6 +273,9 @@ export const Stage: React.FC<Props> = (p) => {
                 </div>
               );
             })}
+            {p.penActive && (
+              <PenLayer scale={scale} width={W} height={H} onDone={p.onPenDone} onCancel={p.onPenCancel} />
+            )}
             {guides.v.map((x, i) => (
               <div key={`v${i}`} className="snap-guide" style={{ left: x * scale, top: 0, width: 1, height: "100%" }} />
             ))}
