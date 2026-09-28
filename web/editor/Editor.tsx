@@ -3,7 +3,8 @@ import type { PlayerRef } from "@remotion/player";
 import { BRAND, changeFormat, cloneScene, newElement, newScene, uid } from "../../src/editor/factory";
 import { normalizeNodes } from "../../src/editor/vector";
 import { sceneAtFrame, sceneFrames, sceneStarts, totalFrames } from "../../src/editor/timing";
-import { Design, ElementData, ElementType, Format, FPS, VectorNode } from "../../src/editor/types";
+import { Design, ElementData, ElementType, Format, FORMAT_SIZE, FPS, VectorNode } from "../../src/editor/types";
+import { DesignPreview } from "../DesignList";
 import { go, LOGO } from "../App";
 import type { SaveState } from "../EditorPage";
 import { updateElement, updateScene, useDesignStore } from "../store";
@@ -22,9 +23,9 @@ type Props = {
 };
 
 const SAVE_LABEL: Record<SaveState, string> = {
-  saved: "✓ Guardado en la nube",
+  saved: "Guardado",
   saving: "Guardando…",
-  pending: "Cambios sin guardar…",
+  pending: "Guardando…",
   error: "⚠ No se pudo guardar",
 };
 
@@ -38,7 +39,8 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const [globalFrame, setGlobalFrame] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [loopScene, setLoopScene] = useState(true);
-  const [tab, setTab] = useState<Parameters<typeof LeftPanel>[0]["tab"]>("plantillas");
+  const [tab, setTab] = useState<Parameters<typeof LeftPanel>[0]["tab"]>("texto");
+  const [showTimeline, setShowTimeline] = useState(true);
   const [pickingBg, setPickingBg] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [penActive, setPenActive] = useState(false);
@@ -302,28 +304,28 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   return (
     <div className="editor">
       <header className="topbar">
-        <img src={LOGO} alt="Bitaxus" onClick={() => go("/")} title="Mis diseños" />
-        <button className="btn ghost small" onClick={() => go("/")}>
-          ← Mis diseños
+        <button className="icon-btn" onClick={() => go("/")} title="Mis diseños">
+          ←
         </button>
+        <img src={LOGO} alt="Bitaxus" onClick={() => go("/")} title="Mis diseños" />
+        <span className="divider" />
         <input className="name" value={name} onChange={(e) => setName(e.target.value)} aria-label="Nombre del diseño" />
-        <button className="btn ghost small" onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)">
+        <span className={`save-dot ${saveState}`} title={SAVE_LABEL[saveState]} />
+        <span className="status">{SAVE_LABEL[saveState]}</span>
+        {saveState === "error" && (
+          <button className="btn small" onClick={onRetrySave}>
+            Reintentar
+          </button>
+        )}
+        <div className="spacer" />
+        <button className="icon-btn" onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)">
           ↶
         </button>
-        <button className="btn ghost small" onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)">
+        <button className="icon-btn" onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)">
           ↷
         </button>
-        <div className="spacer" />
-        <span className="status">
-          {SAVE_LABEL[saveState]}
-          {saveState === "error" && (
-            <button className="btn small" style={{ marginLeft: 6 }} onClick={onRetrySave}>
-              Reintentar
-            </button>
-          )}
-        </span>
         <button className="btn primary" onClick={() => { playerRef.current?.pause(); setExporting(true); }}>
-          ⬇ Exportar MP4
+          Exportar MP4
         </button>
       </header>
 
@@ -399,65 +401,64 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
       </aside>
 
       <footer className="bottom">
-        <div className="transport">
-          <button className="btn small" onClick={togglePlay} title="Espacio">
-            {playing ? "❚❚ Pausa" : "▶ Reproducir"}
-          </button>
-          <button className="btn small ghost" onClick={() => seekScene(0)} title="Ir al inicio de la escena">
-            ⏮
-          </button>
-          <span className="time">
-            {fmt(sceneFrame)} / {fmt(sceneLen)} · total {fmt(total)}
-          </span>
-          <label className="check" style={{ margin: 0 }}>
-            <input type="checkbox" checked={loopScene} onChange={(e) => setLoopScene(e.target.checked)} />
-            Solo esta escena
-          </label>
-        </div>
         <div className="scenes">
+          <button className="play-btn" onClick={togglePlay} title={playing ? "Pausa (Espacio)" : "Reproducir (Espacio)"}>
+            {playing ? "❚❚" : "▶"}
+          </button>
+          <div className="time-box">
+            <span className="time">{fmt(loopScene ? sceneFrame : globalFrame)}</span>
+            <button className={`chip ${loopScene ? "" : "on"}`} onClick={() => setLoopScene(!loopScene)} title="Reproducir solo esta escena o todo el video">
+              {loopScene ? "Escena" : "Todo"} · {fmt(loopScene ? sceneLen : total)}
+            </button>
+          </div>
           {design.scenes.map((s, i) => (
-            <div key={s.id} className={`scene-card ${i === safeIdx ? "on" : ""}`} onClick={() => selectScene(i)}>
-              <b>
-                {i + 1}. {s.name}
-              </b>
-              <span>
-                {s.duration}s · {s.elements.length} elementos
+            <div key={s.id} className={`scene-card ${i === safeIdx ? "on" : ""}`} onClick={() => selectScene(i)} title={s.name}>
+              <div className="scene-thumb" style={{ aspectRatio: `${FORMAT_SIZE[design.format].width} / ${FORMAT_SIZE[design.format].height}` }}>
+                <DesignPreview design={{ ...design, scenes: [{ ...s, transition: "none" }] }} frame={Math.min(45, Math.round(s.duration * FPS) - 1)} />
+              </div>
+              <span className="scene-label">
+                {i + 1} · {s.duration}s
               </span>
               <div className="ops" onClick={(e) => e.stopPropagation()}>
-                <button className="btn small ghost" title="Mover a la izquierda" onClick={() => sceneOp(i, "left")} disabled={i === 0}>
-                  ←
+                <button title="Mover a la izquierda" onClick={() => sceneOp(i, "left")} disabled={i === 0}>
+                  ‹
                 </button>
-                <button className="btn small ghost" title="Mover a la derecha" onClick={() => sceneOp(i, "right")} disabled={i === design.scenes.length - 1}>
-                  →
-                </button>
-                <button className="btn small ghost" title="Duplicar escena" onClick={() => sceneOp(i, "dup")}>
+                <button title="Duplicar escena" onClick={() => sceneOp(i, "dup")}>
                   ⧉
                 </button>
                 <button
-                  className="btn small ghost danger"
                   title="Eliminar escena"
                   disabled={design.scenes.length === 1}
                   onClick={() => window.confirm(`¿Eliminar la escena "${s.name}"?`) && sceneOp(i, "del")}
                 >
                   ✕
                 </button>
+                <button title="Mover a la derecha" onClick={() => sceneOp(i, "right")} disabled={i === design.scenes.length - 1}>
+                  ›
+                </button>
               </div>
             </div>
           ))}
-          <button className="add-scene" onClick={addScene}>
-            + Escena
+          <button className="add-scene" onClick={addScene} title="Agregar escena">
+            +
+          </button>
+          <div className="spacer" />
+          <button className={`chip ${showTimeline ? "on" : ""}`} onClick={() => setShowTimeline(!showTimeline)}>
+            Línea de tiempo {showTimeline ? "▾" : "▸"}
           </button>
         </div>
-        <Timeline
-          design={design}
-          sceneIdx={safeIdx}
-          sceneFrame={sceneFrame}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onSeek={seekScene}
-          preview={preview}
-          endPreview={endPreview}
-        />
+        {showTimeline && (
+          <Timeline
+            design={design}
+            sceneIdx={safeIdx}
+            sceneFrame={sceneFrame}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            onSeek={seekScene}
+            preview={preview}
+            endPreview={endPreview}
+          />
+        )}
       </footer>
 
       {exporting && <ExportDialog design={design} name={name} onClose={() => setExporting(false)} />}

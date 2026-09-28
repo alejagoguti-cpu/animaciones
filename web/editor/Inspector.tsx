@@ -11,7 +11,7 @@ import {
   Scene,
   Transition,
 } from "../../src/editor/types";
-import { Check, ColorField, Field, NumberField, SelectField, TextField } from "./fields";
+import { Check, ColorField, Field, NumberField, Section, SelectField, TextField } from "./fields";
 
 const ENTER: [EnterKind, string][] = [
   ["none", "Sin animación"],
@@ -74,8 +74,7 @@ export const ElementInspector: React.FC<ElProps> = ({ el, sceneDuration, onChang
 
   return (
     <>
-      <div className="group">
-        <h3>Elemento</h3>
+      <Section title="Elemento">
         <TextField label="Nombre" value={el.name ?? ""} onChange={(v) => set("name", v)} />
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <button className="btn small" onClick={onDuplicate} title="Ctrl+D">
@@ -94,12 +93,11 @@ export const ElementInspector: React.FC<ElProps> = ({ el, sceneDuration, onChang
             Eliminar
           </button>
         </div>
-      </div>
+      </Section>
 
       <TypeFields el={el} setProp={setProp} textRef={textRef} editingPoints={editingPoints} onEditPoints={onEditPoints} />
 
-      <div className="group">
-        <h3>Animación</h3>
+      <Section title="Animación">
         <div className="row">
           <SelectField label="Entrada" value={el.enter.kind} options={ENTER} onChange={(v) => set("enter", { ...el.enter, kind: v })} />
           <NumberField label="Duración (s)" value={el.enter.duration} step={0.1} min={0.1} max={5} onChange={(v) => set("enter", { ...el.enter, duration: v })} />
@@ -113,10 +111,9 @@ export const ElementInspector: React.FC<ElProps> = ({ el, sceneDuration, onChang
           <NumberField label="Aparece (s)" value={el.start} step={0.1} min={0} max={el.end - 0.1} onChange={(v) => set("start", v)} />
           <NumberField label="Se va (s)" value={el.end} step={0.1} min={el.start + 0.1} max={sceneDuration} onChange={(v) => set("end", v)} />
         </div>
-      </div>
+      </Section>
 
-      <div className="group">
-        <h3>Posición</h3>
+      <Section title="Posición" closed>
         <div className="row">
           <NumberField label="X" value={el.x} onChange={(v) => set("x", v)} />
           <NumberField label="Y" value={el.y} onChange={(v) => set("y", v)} />
@@ -125,7 +122,7 @@ export const ElementInspector: React.FC<ElProps> = ({ el, sceneDuration, onChang
           <NumberField label="Rotación (°)" value={el.rotation} onChange={(v) => set("rotation", v)} />
           <NumberField label="Opacidad (%)" value={Math.round(el.opacity * 100)} min={0} max={100} onChange={(v) => set("opacity", v / 100)} />
         </div>
-      </div>
+      </Section>
     </>
   );
 };
@@ -141,8 +138,7 @@ const TypeFields: React.FC<{
     case "vector": {
       const p = el.props;
       return (
-        <div className="group">
-          <h3>Vector</h3>
+        <Section title="Vector">
           <button className={`btn small ${editingPoints ? "primary" : ""}`} style={{ marginBottom: 10 }} onClick={() => onEditPoints(!editingPoints)}>
             {editingPoints ? "✓ Listo con los puntos" : "✎ Editar puntos (doble clic)"}
           </button>
@@ -164,14 +160,13 @@ const TypeFields: React.FC<{
           <ColorField label="Borde" value={p.stroke} onChange={(v) => setProp("stroke", v)} />
           <NumberField label="Grosor del borde" value={p.strokeWidth} min={0} onChange={(v) => setProp("strokeWidth", v)} />
           <Check label="Brillo del color de acento" value={p.glow} onChange={(v) => setProp("glow", v)} />
-        </div>
+        </Section>
       );
     }
     case "text": {
       const p = el.props;
       return (
-        <div className="group">
-          <h3>Texto</h3>
+        <Section title="Texto">
           <TextField label="Contenido" value={p.text} multiline inputRef={textRef} onChange={(v) => setProp("text", v)} />
           <div className="row">
             <SelectField label="Fuente" value={p.font} options={[["display", "Belamor (titular)"], ["body", "Montserrat (texto)"]]} onChange={(v) => setProp("font", v)} />
@@ -189,30 +184,27 @@ const TypeFields: React.FC<{
           <ColorField label="Color" value={p.color} onChange={(v) => setProp("color", v)} />
           <Check label="MAYÚSCULAS" value={p.uppercase} onChange={(v) => setProp("uppercase", v)} />
           <Check label="Brillo del color de acento" value={p.glow} onChange={(v) => setProp("glow", v)} />
-        </div>
+        </Section>
       );
     }
     case "image":
     case "video":
       return (
-        <div className="group">
-          <h3>{el.type === "image" ? "Imagen" : "Video"}</h3>
+        <Section title={el.type === "image" ? "Imagen" : "Video"}>
           <SelectField label="Ajuste" value={el.props.fit} options={[["contain", "Completa"], ["cover", "Rellenar caja"]]} onChange={(v) => setProp("fit", v)} />
           <NumberField label="Esquinas redondeadas" value={el.props.radius} min={0} onChange={(v) => setProp("radius", v)} />
           {el.type === "video" && <Check label="Sin sonido" value={el.props.muted} onChange={(v) => setProp("muted", v)} />}
-        </div>
+        </Section>
       );
     case "logo":
       return (
-        <div className="group">
-          <h3>Logo</h3>
+        <Section title="Logo">
           <Check label="Brillo del color de acento" value={el.props.glow} onChange={(v) => setProp("glow", v)} />
-        </div>
+        </Section>
       );
     case "shape":
       return (
-        <div className="group">
-          <h3>Forma</h3>
+        <Section title="Forma">
           <SelectField label="Tipo" value={el.props.shape} options={[["rect", "Rectángulo"], ["circle", "Círculo"]]} onChange={(v) => setProp("shape", v)} />
           <ColorField label="Relleno" value={el.props.fill} onChange={(v) => setProp("fill", v)} />
           <div className="row">
@@ -220,12 +212,11 @@ const TypeFields: React.FC<{
             <NumberField label="Borde (px)" value={el.props.borderWidth} min={0} onChange={(v) => setProp("borderWidth", v)} />
           </div>
           <ColorField label="Color del borde" value={el.props.borderColor} onChange={(v) => setProp("borderColor", v)} />
-        </div>
+        </Section>
       );
     case "pill":
       return (
-        <div className="group">
-          <h3>Botón de vidrio</h3>
+        <Section title="Botón de vidrio">
           <TextField label="Texto" value={el.props.text} multiline inputRef={textRef} onChange={(v) => setProp("text", v)} />
           <div className="row">
             <NumberField label="Tamaño" value={el.props.size} min={8} onChange={(v) => setProp("size", v)} />
@@ -233,22 +224,20 @@ const TypeFields: React.FC<{
           </div>
           <Check label="Resplandor" value={el.props.glow} onChange={(v) => setProp("glow", v)} />
           <Check label="Destello" value={el.props.shine} onChange={(v) => setProp("shine", v)} />
-        </div>
+        </Section>
       );
     case "card":
       return (
-        <div className="group">
-          <h3>Tarjeta</h3>
+        <Section title="Tarjeta">
           <TextField label="Ícono" value={el.props.icon} onChange={(v) => setProp("icon", v)} />
           <TextField label="Título" value={el.props.title} onChange={(v) => setProp("title", v)} />
           <TextField label="Texto" value={el.props.text} multiline inputRef={textRef} onChange={(v) => setProp("text", v)} />
           <Check label="Resplandor" value={el.props.glow} onChange={(v) => setProp("glow", v)} />
-        </div>
+        </Section>
       );
     case "counter":
       return (
-        <div className="group">
-          <h3>Contador</h3>
+        <Section title="Contador">
           <TextField label="Etiqueta" value={el.props.label} onChange={(v) => setProp("label", v)} />
           <div className="row">
             <TextField label="Moneda" value={el.props.currency} onChange={(v) => setProp("currency", v)} />
@@ -258,14 +247,13 @@ const TypeFields: React.FC<{
           </div>
           <NumberField label="Tarda en contar (s)" value={el.props.countDuration} step={0.1} min={0.1} onChange={(v) => setProp("countDuration", v)} />
           <ColorField label="Color del número" value={el.props.color} onChange={(v) => setProp("color", v)} />
-        </div>
+        </Section>
       );
     case "phone": {
       const msgs = el.props.messages;
       const setMsgs = (m: typeof msgs) => setProp("messages", m);
       return (
-        <div className="group">
-          <h3>Chat de WhatsApp</h3>
+        <Section title="Chat de WhatsApp">
           <TextField label="Nombre del contacto" value={el.props.contactName} onChange={(v) => setProp("contactName", v)} />
           <Field label="Mensajes (aparecen en orden)">
             {msgs.map((m, i) => (
@@ -303,7 +291,7 @@ const TypeFields: React.FC<{
               + Mensaje
             </button>
           </Field>
-        </div>
+        </Section>
       );
     }
   }
@@ -323,8 +311,7 @@ export const SceneInspector: React.FC<SceneProps> = ({ design, scene, onScene, o
   const setBg = (patch: Partial<Scene["background"]>) => onScene((s) => ({ ...s, background: { ...s.background, ...patch } }));
   return (
     <>
-      <div className="group">
-        <h3>Escena</h3>
+      <Section title="Escena">
         <TextField label="Nombre" value={scene.name} onChange={(v) => onScene((s) => ({ ...s, name: v }))} />
         <div className="row">
           <NumberField
@@ -348,10 +335,9 @@ export const SceneInspector: React.FC<SceneProps> = ({ design, scene, onScene, o
           />
           <SelectField label="Transición de entrada" value={scene.transition} options={TRANSITIONS} onChange={(v) => onScene((s) => ({ ...s, transition: v }))} />
         </div>
-      </div>
+      </Section>
 
-      <div className="group">
-        <h3>Fondo</h3>
+      <Section title="Fondo">
         <SelectField label="Tipo" value={bg.kind} options={BACKGROUNDS} onChange={(v) => setBg({ kind: v })} />
         {bg.kind !== "image" && (
           <ColorField label={bg.kind === "glow" ? "Color del resplandor" : "Color"} value={bg.color} onChange={(v) => setBg({ color: v })} />
@@ -365,10 +351,9 @@ export const SceneInspector: React.FC<SceneProps> = ({ design, scene, onScene, o
           </button>
         )}
         <Check label="Rejilla de puntos" value={bg.dots} onChange={(v) => setBg({ dots: v })} />
-      </div>
+      </Section>
 
-      <div className="group">
-        <h3>Diseño</h3>
+      <Section title="Diseño">
         <SelectField
           label="Formato"
           value={design.format}
@@ -379,7 +364,7 @@ export const SceneInspector: React.FC<SceneProps> = ({ design, scene, onScene, o
         <p className="muted" style={{ lineHeight: 1.5 }}>
           Haz clic en un elemento del lienzo para editarlo. Doble clic sobre un texto para cambiar lo que dice.
         </p>
-      </div>
+      </Section>
     </>
   );
 };

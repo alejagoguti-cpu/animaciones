@@ -47,15 +47,16 @@ const promo = (): Design => ({
   scenes: [
     scene("Gancho", 3.5, "none", [
       { ...box(90, 120, 300, 57, 0, 3.5), ...anim("fade", 0.5), type: "logo", name: "Logo", props: { glow: false } },
-      text("Cobrar debería ser tan fácil como enviar un mensaje.", box(90, 600, 900, 110, 0, 3.5), anim("fade", 0.5), "parrafo", { size: 36, color: "rgba(255,255,255,0.45)" }),
-      text("Vendiste", box(90, 740, 900, 170, 0.2, 3.5), anim("words", 0.5), "titular", { size: 150 }),
-      text("como nunca", box(90, 905, 900, 330, 0.45, 3.5), anim("words", 0.6), "titular", { size: 150 }),
-      { ...box(90, 1260, 760, 150, 1.1, 3.5), ...anim("pop", 0.7), type: "pill", name: "¿Y LA PLATA?", props: { text: "¿Y LA PLATA?", size: 94, font: "display", glow: true, shine: true } },
+      text("Cobrar debería ser tan fácil como enviar un mensaje.", box(90, 555, 900, 110, 0, 3.5), anim("fade", 0.5), "parrafo", { size: 36, color: "rgba(255,255,255,0.45)" }),
+      text("Vendiste", box(90, 695, 900, 170, 0.2, 3.5), anim("words", 0.5), "titular", { size: 150 }),
+      text("como nunca", box(90, 860, 900, 330, 0.45, 3.5), anim("words", 0.6), "titular", { size: 150 }),
+      { ...box(90, 1200, 780, 150, 1.1, 3.5), ...anim("pop", 0.7), type: "pill", name: "¿Y LA PLATA?", props: { text: "¿Y LA PLATA?", size: 94, font: "display", glow: true, shine: true } },
     ]),
     scene("Chat WhatsApp", 6, "slide-up", [
       text("No necesitas otra aplicación", box(90, 150, 900, 200, 0.1, 6), anim("words", 0.8), "titular", { size: 78 }),
       {
         ...box(150, 480, 780, 1300, 0, 6),
+        rotation: -2,
         ...anim("up", 0.9, "float"),
         type: "phone",
         name: "Teléfono con chat",
@@ -85,10 +86,10 @@ const promo = (): Design => ({
       text("Valores de referencia. El resultado puede variar según la operación.", box(80, 1360, 920, 100, 2, 4), anim("fade", 0.5), "parrafo", { size: 30, color: "rgba(255,255,255,0.45)" }),
     ]),
     scene("Cierre", 4, "fade", [
-      { ...box(130, 640, 820, 157, 0, 4), ...anim("reveal", 0.8), type: "logo", name: "Logo", props: { glow: true } },
-      text("Cobra, paga y entiende tu dinero desde WhatsApp.", box(100, 880, 880, 140, 0.5, 4), anim("fade", 0.5), "parrafo", { size: 46, color: colors.white, align: "center" }),
-      { ...box(290, 1080, 500, 140, 0.9, 4), ...anim("pop", 0.7, "pulse"), type: "pill", name: "Hablemos", props: { text: "Hablemos →", size: 56, font: "body", glow: true, shine: false } },
-      text("bitaxus.com", box(240, 1290, 600, 70, 1.3, 4), anim("fade", 0.5), "subtitulo", { size: 44, align: "center", uppercase: false, color: "rgba(255,255,255,0.72)" }),
+      { ...box(130, 600, 820, 157, 0, 4), ...anim("reveal", 0.8), type: "logo", name: "Logo", props: { glow: true } },
+      text("Cobra, paga y entiende tu dinero desde WhatsApp.", box(100, 840, 880, 140, 0.5, 4), anim("fade", 0.5), "parrafo", { size: 46, color: colors.white, align: "center" }),
+      { ...box(290, 1040, 500, 140, 0.9, 4), ...anim("pop", 0.7, "pulse"), type: "pill", name: "Hablemos", props: { text: "Hablemos →", size: 56, font: "body", glow: true, shine: false } },
+      text("bitaxus.com", box(240, 1250, 600, 70, 1.3, 4), anim("fade", 0.5), "subtitulo", { size: 44, align: "center", uppercase: false, color: "rgba(255,255,255,0.72)" }),
     ]),
   ],
 });

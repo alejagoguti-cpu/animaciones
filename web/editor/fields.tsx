@@ -146,3 +146,11 @@ export const Check: React.FC<{ label: string; value: boolean; onChange: (v: bool
     {label}
   </label>
 );
+
+// Sección plegable del panel de propiedades.
+export const Section: React.FC<{ title: string; closed?: boolean; children: React.ReactNode }> = ({ title, closed, children }) => (
+  <details className="group" open={!closed}>
+    <summary>{title}</summary>
+    <div className="group-body">{children}</div>
+  </details>
+);

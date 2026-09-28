@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { BRAND, textPreset } from "../../src/editor/factory";
 import { TEMPLATES } from "../../src/editor/templates";
 import { buildPath, VECTOR_PRESETS } from "../../src/editor/vector";
-import { Design, ElementType } from "../../src/editor/types";
+import { Design, ElementType, FORMAT_SIZE } from "../../src/editor/types";
+import { DesignPreview } from "../DesignList";
 import { publicUrl, supabase, UPLOADS_BUCKET } from "../supabase";
 
 export type Asset = {
@@ -25,9 +26,8 @@ const TABS: [Tab, string, string][] = [
   ["texto", "T", "Texto"],
   ["elementos", "◇", "Elementos"],
   ["vectores", "✎", "Vectores"],
+  ["assets", "▣", "Fotos"],
   ["marca", "◉", "Marca"],
-  ["assets", "▣", "Assets"],
-  ["subidas", "⇪", "Subidas"],
 ];
 
 const CATEGORY: Record<string, string> = {
@@ -67,32 +67,41 @@ export const LeftPanel: React.FC<Props> = (p) => (
       {p.tab === "elementos" && <ElementsTab onAdd={p.onAdd} />}
       {p.tab === "vectores" && <VectorsTab onAdd={p.onAdd} penActive={p.penActive} onPen={p.onPen} />}
       {p.tab === "marca" && <BrandTab onAdd={p.onAdd} onColor={p.onColor} />}
-      {p.tab === "assets" && <AssetsTab onAsset={p.onAsset} picking={p.pickingBackground} />}
-      {p.tab === "subidas" && <UploadsTab onAsset={p.onAsset} picking={p.pickingBackground} />}
+      {p.tab === "assets" && (
+        <>
+          <UploadsTab onAsset={p.onAsset} picking={p.pickingBackground} />
+          <AssetsTab onAsset={p.onAsset} picking={p.pickingBackground} />
+        </>
+      )}
     </div>
   </aside>
 );
 
 const Templates: React.FC<{ onTemplate: Props["onTemplate"] }> = ({ onTemplate }) => (
   <section>
-    <h3>Plantillas Bitaxus</h3>
-    {TEMPLATES.map((t) => (
-      <div key={t.id} className="preset" style={{ cursor: "default" }}>
-        <b>{t.name}</b>
-        <small>{t.description}</small>
-        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-          <button className="btn small" onClick={() => onTemplate(t.make(), "append")}>
-            Añadir escenas
-          </button>
-          <button
-            className="btn small"
-            onClick={() => window.confirm("Esto reemplaza todo el diseño actual. ¿Continuar?") && onTemplate(t.make(), "replace")}
-          >
-            Reemplazar todo
-          </button>
+    <h3>Plantillas</h3>
+    {TEMPLATES.map((t) => {
+      const d = t.make();
+      return (
+        <div key={t.id} className="tpl">
+          <div className="tpl-thumb" style={{ aspectRatio: `${FORMAT_SIZE[d.format].width} / ${FORMAT_SIZE[d.format].height}` }}>
+            <DesignPreview design={d} />
+          </div>
+          <div className="tpl-info">
+            <b>{t.name}</b>
+            <small>{t.description}</small>
+            <div className="tpl-actions">
+              <button className="btn small primary" onClick={() => window.confirm("Esto reemplaza el diseño actual. ¿Continuar?") && onTemplate(t.make(), "replace")}>
+                Usar
+              </button>
+              <button className="btn small ghost" onClick={() => onTemplate(t.make(), "append")} title="Agrega sus escenas al final">
+                + Escenas
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    ))}
+      );
+    })}
   </section>
 );
 
@@ -301,7 +310,7 @@ const UploadsTab: React.FC<{ onAsset: (a: Asset) => void; picking: boolean }> = 
   return (
     <>
       <section>
-        <h3>Tus archivos</h3>
+        <h3>Subir</h3>
         <label className="btn primary" style={{ width: "100%" }}>
           ⇪ Subir imagen o video
           <input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple hidden onChange={(e) => upload(e.target.files)} />

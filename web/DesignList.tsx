@@ -68,9 +68,6 @@ export const DesignList: React.FC = () => {
     <div className="list-page brand-bg">
       <header className="list-header">
         <img src={LOGO} alt="Bitaxus" />
-        <b className="display" style={{ fontSize: 16 }}>
-          Animaciones
-        </b>
         <div style={{ flex: 1 }} />
         <a className="btn ghost small" href={`${import.meta.env.BASE_URL}studio/`} target="_blank" rel="noreferrer">
           Estudio Remotion ↗
@@ -78,74 +75,30 @@ export const DesignList: React.FC = () => {
       </header>
 
       <div className="list-body">
-        {error && <p className="error">{error}</p>}
-
-        <h2 className="display">Crear</h2>
-        <div className="grid">
-          {(Object.keys(FORMAT_SIZE) as Format[]).map((f) => (
-            <button
-              key={f}
-              className="tile"
-              disabled={busy}
-              onClick={() => create("Sin título", emptyDesign(f))}
-              style={{ textAlign: "left", color: "inherit" }}
-            >
-              <div className="thumb" style={{ aspectRatio: "16 / 10" }}>
-                <div
-                  style={{
-                    border: "2px dashed rgba(255,255,255,0.4)",
-                    borderRadius: 6,
-                    aspectRatio: `${FORMAT_SIZE[f].width} / ${FORMAT_SIZE[f].height}`,
-                    height: "62%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 22,
-                  }}
-                >
-                  +
-                </div>
-              </div>
-              <div className="meta">
-                <b>En blanco</b>
-                <span>{FORMAT_SIZE[f].label}</span>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        <h2 className="display">Plantillas</h2>
-        <div className="grid">
-          {TEMPLATES.map((t) => {
-            const d = t.make();
-            return (
-              <button
-                key={t.id}
-                className="tile"
-                disabled={busy}
-                onClick={() => create(t.name, t.make())}
-                style={{ textAlign: "left", color: "inherit" }}
-              >
-                <div className="thumb" style={{ aspectRatio: "9 / 12" }}>
-                  <div style={{ height: "100%", aspectRatio: `${FORMAT_SIZE[d.format].width} / ${FORMAT_SIZE[d.format].height}` }}>
-                    <DesignPreview design={d} />
-                  </div>
-                </div>
-                <div className="meta">
-                  <b>{t.name}</b>
-                  <span>{t.description}</span>
-                </div>
+        <div className="hero">
+          <h1 className="display">Animaciones</h1>
+          <p>Crea videos animados con la marca Bitaxus y descárgalos en MP4.</p>
+          <div className="formats">
+            {(Object.keys(FORMAT_SIZE) as Format[]).map((f) => (
+              <button key={f} className="format-btn" disabled={busy} onClick={() => create("Sin título", emptyDesign(f))}>
+                <span className="shape" style={{ aspectRatio: `${FORMAT_SIZE[f].width} / ${FORMAT_SIZE[f].height}` }} />
+                <span>
+                  <b>{f}</b>
+                  <span>{FORMAT_SIZE[f].label.replace(/ \d+:\d+$/, "")}</span>
+                </span>
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
+
+        {error && <p className="error">{error}</p>}
 
         <h2 className="display">Mis diseños</h2>
         {rows === null && !error && <p className="muted">Cargando…</p>}
-        {rows?.length === 0 && <p className="muted">Todavía no hay diseños. Crea uno arriba.</p>}
+        {rows?.length === 0 && <p className="muted">Todavía no hay diseños. Empieza con un formato o una plantilla.</p>}
         <div className="grid">
           {rows?.map((row) => (
-            <div key={row.id} className="tile" onClick={() => go(`/d/${row.id}`)}>
+            <div key={row.id} className="tile" onClick={() => go(`/d/${row.id}`)} role="button" style={{ cursor: "pointer" }}>
               <div className="thumb">
                 <div style={{ height: "100%", aspectRatio: `${FORMAT_SIZE[row.data.format]?.width ?? 1080} / ${FORMAT_SIZE[row.data.format]?.height ?? 1920}` }}>
                   <DesignPreview design={row.data} />
@@ -158,15 +111,31 @@ export const DesignList: React.FC = () => {
                 </span>
               </div>
               <div className="actions" onClick={(e) => e.stopPropagation()}>
-                <button className="btn small" onClick={() => duplicate(row)}>
-                  Duplicar
-                </button>
-                <button className="btn small danger" onClick={() => remove(row)}>
-                  Eliminar
-                </button>
+                <button onClick={() => duplicate(row)}>Duplicar</button>
+                <button onClick={() => remove(row)}>Eliminar</button>
               </div>
             </div>
           ))}
+        </div>
+
+        <h2 className="display">Plantillas</h2>
+        <div className="grid">
+          {TEMPLATES.map((t) => {
+            const d = t.make();
+            return (
+              <button key={t.id} className="tile" disabled={busy} onClick={() => create(t.name, t.make())}>
+                <div className="thumb">
+                  <div style={{ height: "100%", aspectRatio: `${FORMAT_SIZE[d.format].width} / ${FORMAT_SIZE[d.format].height}` }}>
+                    <DesignPreview design={d} />
+                  </div>
+                </div>
+                <div className="meta">
+                  <b>{t.name}</b>
+                  <span>{t.description}</span>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
