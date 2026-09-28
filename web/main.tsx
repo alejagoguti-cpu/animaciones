@@ -74,7 +74,7 @@ const App: React.FC = () => {
         <div
           style={{
             width: "100%",
-            maxWidth: `min(100%, calc((100vh - 220px) * ${format.width / format.height}))`,
+            maxWidth: `min(100%, max(320px, calc((100vh - 220px) * ${format.width / format.height})))`,
             borderRadius: 20,
             overflow: "hidden",
             border: `2px solid ${colors.glassBorder}`,
