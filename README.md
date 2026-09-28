@@ -2,6 +2,10 @@
 
 Videos promocionales hechos con [Remotion](https://www.remotion.dev/) (React → MP4), con el look de [bitaxus.com](https://www.bitaxus.com/): fondo negro, resplandores rojos, rejilla de puntos y botones de vidrio.
 
+## Ver en la web
+
+El estudio se publica solo en **https://alejagoguti-cpu.github.io/animaciones/** cada vez que se sube un cambio a `main` (ver `.github/workflows/pages.yml`).
+
 ## Uso
 
 ```bash
