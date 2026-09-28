@@ -26,13 +26,7 @@ npm run render:square  # exporta out/bitaxus-promo-square.mp4 (1080x1350, feed)
 
 Para cambiar un texto, edita la escena correspondiente. Para cambiar cuánto dura una escena, cambia `SCENES` en `src/BitaxusPromo.tsx` (30 frames = 1 segundo).
 
-## Fuente de titulares
+## Marca
 
-La web usa **Belamor** para los titulares. Aquí se usa **Audiowide** (Google Fonts), que se le parece y es libre. Si tienes la licencia comercial de Belamor:
-
-1. Copia el archivo a `public/fonts/Belamor.ttf`.
-2. En `src/theme.ts`, cambia la fuente `display` por una carga local con `@remotion/fonts`.
-
-## Logo
-
-`src/components/Logo.tsx` dibuja el wordmark con texto. Para usar el logo real, pon el archivo en `public/logo.png` y usa `<Img src={staticFile("logo.png")} />`.
+- **Titulares:** fuente Belamor (`public/fonts/`), cargada en `src/theme.ts`. Texto corrido: Montserrat.
+- **Logo:** `public/logo.png`, usado desde `src/components/Logo.tsx`.
