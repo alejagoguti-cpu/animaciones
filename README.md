@@ -4,7 +4,10 @@ Videos promocionales hechos con [Remotion](https://www.remotion.dev/) (React →
 
 ## Ver en la web
 
-La página con el reproductor (`web/`) se publica sola en **https://alejagoguti-cpu.github.io/animaciones/** cada vez que se sube un cambio a `main` (ver `.github/workflows/pages.yml`).
+- **Editor (Remotion Studio):** https://alejagoguti-cpu.github.io/animaciones/
+- **Reproductor simple:** https://alejagoguti-cpu.github.io/animaciones/player/
+
+Ambos se publican solos cada vez que se sube un cambio a `main` (ver `.github/workflows/pages.yml`).
 
 ## Uso
 
