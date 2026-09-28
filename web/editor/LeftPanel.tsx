@@ -1,0 +1,318 @@
+import React, { useEffect, useState } from "react";
+import { BRAND, textPreset } from "../../src/editor/factory";
+import { TEMPLATES } from "../../src/editor/templates";
+import { Design, ElementType } from "../../src/editor/types";
+import { publicUrl, supabase, UPLOADS_BUCKET } from "../supabase";
+
+export type Asset = {
+  id: string;
+  name: string;
+  category: string;
+  file: string;
+  width: number;
+  height: number;
+  type: "image" | "video";
+};
+
+const BASE = import.meta.env.BASE_URL;
+const assetUrl = (file: string) => (/^https?:/.test(file) ? file : `${BASE}${file}`);
+
+type Tab = "plantillas" | "texto" | "elementos" | "marca" | "assets" | "subidas";
+
+const TABS: [Tab, string, string][] = [
+  ["plantillas", "▦", "Plantillas"],
+  ["texto", "T", "Texto"],
+  ["elementos", "◇", "Elementos"],
+  ["marca", "◉", "Marca"],
+  ["assets", "▣", "Assets"],
+  ["subidas", "⇪", "Subidas"],
+];
+
+const CATEGORY: Record<string, string> = {
+  logos: "Logos",
+  fondos: "Fondos",
+  mockups: "Mockups",
+  iconos: "Íconos y monedas",
+  piezas: "Piezas de marca",
+  videos: "Videos",
+};
+
+type Props = {
+  tab: Tab;
+  setTab: (t: Tab) => void;
+  onAdd: (type: ElementType, extra?: { src?: string; width?: number; height?: number; textKind?: Parameters<typeof textPreset>[0] }) => void;
+  onTemplate: (d: Design, mode: "replace" | "append") => void;
+  onAsset: (a: Asset) => void;
+  onColor: (c: string) => void;
+  pickingBackground: boolean;
+};
+
+export const LeftPanel: React.FC<Props> = (p) => (
+  <aside className="left">
+    <nav className="left-tabs">
+      {TABS.map(([id, ico, label]) => (
+        <button key={id} className={p.tab === id ? "on" : ""} onClick={() => p.setTab(id)}>
+          <span className="ico">{ico}</span>
+          {label}
+        </button>
+      ))}
+    </nav>
+    <div className="left-content">
+      {p.tab === "plantillas" && <Templates onTemplate={p.onTemplate} />}
+      {p.tab === "texto" && <TextTab onAdd={p.onAdd} />}
+      {p.tab === "elementos" && <ElementsTab onAdd={p.onAdd} />}
+      {p.tab === "marca" && <BrandTab onAdd={p.onAdd} onColor={p.onColor} />}
+      {p.tab === "assets" && <AssetsTab onAsset={p.onAsset} picking={p.pickingBackground} />}
+      {p.tab === "subidas" && <UploadsTab onAsset={p.onAsset} picking={p.pickingBackground} />}
+    </div>
+  </aside>
+);
+
+const Templates: React.FC<{ onTemplate: Props["onTemplate"] }> = ({ onTemplate }) => (
+  <section>
+    <h3>Plantillas Bitaxus</h3>
+    {TEMPLATES.map((t) => (
+      <div key={t.id} className="preset" style={{ cursor: "default" }}>
+        <b>{t.name}</b>
+        <small>{t.description}</small>
+        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+          <button className="btn small" onClick={() => onTemplate(t.make(), "append")}>
+            Añadir escenas
+          </button>
+          <button
+            className="btn small"
+            onClick={() => window.confirm("Esto reemplaza todo el diseño actual. ¿Continuar?") && onTemplate(t.make(), "replace")}
+          >
+            Reemplazar todo
+          </button>
+        </div>
+      </div>
+    ))}
+  </section>
+);
+
+const TextTab: React.FC<{ onAdd: Props["onAdd"] }> = ({ onAdd }) => (
+  <section>
+    <h3>Agregar texto</h3>
+    <button className="preset" onClick={() => onAdd("text", { textKind: "titular" })}>
+      <span className="display" style={{ fontSize: 24 }}>
+        Titular
+      </span>
+      <small>Belamor, grande, palabra por palabra</small>
+    </button>
+    <button className="preset" onClick={() => onAdd("text", { textKind: "subtitulo" })}>
+      <span className="display" style={{ fontSize: 16 }}>
+        Subtítulo
+      </span>
+      <small>Belamor mediano</small>
+    </button>
+    <button className="preset" onClick={() => onAdd("text", { textKind: "parrafo" })}>
+      <span style={{ fontSize: 14 }}>Párrafo de texto</span>
+      <small>Montserrat, para frases y descripciones</small>
+    </button>
+    <button className="preset" onClick={() => onAdd("text", { textKind: "etiqueta" })}>
+      <b style={{ fontSize: 12, letterSpacing: "0.14em" }}>ETIQUETA</b>
+      <small>Montserrat en negrita, espaciada</small>
+    </button>
+  </section>
+);
+
+const ElementsTab: React.FC<{ onAdd: Props["onAdd"] }> = ({ onAdd }) => (
+  <section>
+    <h3>Componentes Bitaxus</h3>
+    {(
+      [
+        ["pill", "Botón de vidrio", "Como “¿Y LA PLATA?” o “Hablemos →”"],
+        ["card", "Tarjeta de beneficio", "Ícono, título y texto"],
+        ["phone", "Teléfono con chat", "Conversación de WhatsApp animada"],
+        ["counter", "Contador de monto", "Número que sube, con moneda"],
+        ["logo", "Logo Bitaxus", "Se revela con brillo"],
+      ] as [ElementType, string, string][]
+    ).map(([t, name, desc]) => (
+      <button key={t} className="preset" onClick={() => onAdd(t)}>
+        <b>{name}</b>
+        <small>{desc}</small>
+      </button>
+    ))}
+    <h3 style={{ marginTop: 16 }}>Formas</h3>
+    <button className="preset" onClick={() => onAdd("shape")}>
+      <b>Rectángulo de vidrio</b>
+      <small>Panel con borde blanco</small>
+    </button>
+  </section>
+);
+
+const BrandTab: React.FC<{ onAdd: Props["onAdd"]; onColor: Props["onColor"] }> = ({ onAdd, onColor }) => (
+  <>
+    <section>
+      <h3>Logo</h3>
+      <button className="preset" onClick={() => onAdd("logo")} style={{ background: "#000" }}>
+        <img src={`${BASE}logo.png`} alt="Bitaxus" style={{ width: "100%" }} />
+      </button>
+    </section>
+    <section>
+      <h3>Colores</h3>
+      <p className="muted" style={{ marginTop: 0 }}>
+        Clic para aplicarlo al elemento seleccionado (o al acento del diseño si no hay ninguno).
+      </p>
+      <div className="swatches">
+        {BRAND.palette.map((c) => (
+          <button key={c} className="swatch" style={{ background: c }} onClick={() => onColor(c)} title={c} />
+        ))}
+      </div>
+    </section>
+    <section>
+      <h3>Tipografías</h3>
+      <div className="preset" style={{ cursor: "default" }}>
+        <span className="display" style={{ fontSize: 22 }}>
+          Belamor
+        </span>
+        <small>Titulares</small>
+      </div>
+      <div className="preset" style={{ cursor: "default" }}>
+        <span style={{ fontSize: 18, fontWeight: 600 }}>Montserrat</span>
+        <small>Textos y botones</small>
+      </div>
+    </section>
+  </>
+);
+
+const AssetGrid: React.FC<{ assets: Asset[]; onAsset: (a: Asset) => void }> = ({ assets, onAsset }) => (
+  <div className="asset-grid">
+    {assets.map((a) =>
+      a.type === "video" ? (
+        <button key={a.id} className="asset" onClick={() => onAsset(a)} title={a.name}>
+          <video src={assetUrl(a.file)} muted preload="metadata" />
+          <span className="tag">Video</span>
+        </button>
+      ) : (
+        <button
+          key={a.id}
+          className="asset"
+          onClick={() => onAsset(a)}
+          title={a.name}
+          style={{ backgroundImage: `url("${assetUrl(a.file)}")` }}
+        />
+      ),
+    )}
+  </div>
+);
+
+const AssetsTab: React.FC<{ onAsset: (a: Asset) => void; picking: boolean }> = ({ onAsset, picking }) => {
+  const [assets, setAssets] = useState<Asset[] | null>(null);
+  useEffect(() => {
+    fetch(`${BASE}assets/manifest.json`)
+      .then((r) => r.json())
+      .then(setAssets)
+      .catch(() => setAssets([]));
+  }, []);
+  if (!assets) return <p className="muted">Cargando…</p>;
+  const cats = [...new Set(assets.map((a) => a.category))];
+  return (
+    <>
+      {picking && <p style={{ color: "#ff8a92", marginTop: 0 }}>Elige una imagen para el fondo de la escena.</p>}
+      {cats.map((c) => (
+        <section key={c}>
+          <h3>{CATEGORY[c] ?? c}</h3>
+          <AssetGrid assets={assets.filter((a) => a.category === c && (!picking || a.type === "image"))} onAsset={onAsset} />
+        </section>
+      ))}
+    </>
+  );
+};
+
+const UPLOAD_DIR = "files";
+
+const UploadsTab: React.FC<{ onAsset: (a: Asset) => void; picking: boolean }> = ({ onAsset, picking }) => {
+  const [files, setFiles] = useState<Asset[] | null>(null);
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+
+  const load = async () => {
+    const { data, error } = await supabase.storage
+      .from(UPLOADS_BUCKET)
+      .list(UPLOAD_DIR, { limit: 200, sortBy: { column: "created_at", order: "desc" } });
+    if (error) return setError(error.message);
+    setFiles(
+      (data ?? [])
+        .filter((f) => f.name && !f.name.startsWith("."))
+        .map((f) => {
+          const meta = (f.metadata ?? {}) as { mimetype?: string };
+          const [, w, h] = f.name.match(/__(\d+)x(\d+)__/) ?? [];
+          return {
+            id: f.name,
+            name: f.name.replace(/^\d+-/, "").replace(/__\d+x\d+__/, ""),
+            category: "subidas",
+            file: publicUrl(`${UPLOAD_DIR}/${f.name}`),
+            width: Number(w) || 800,
+            height: Number(h) || 800,
+            type: meta.mimetype?.startsWith("video") ? "video" : "image",
+          } as Asset;
+        }),
+    );
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const measure = (file: File) =>
+    new Promise<{ w: number; h: number }>((resolve) => {
+      const url = URL.createObjectURL(file);
+      if (file.type.startsWith("video")) {
+        const v = document.createElement("video");
+        v.onloadedmetadata = () => resolve({ w: v.videoWidth, h: v.videoHeight });
+        v.onerror = () => resolve({ w: 1080, h: 1920 });
+        v.src = url;
+      } else {
+        const img = new Image();
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = () => resolve({ w: 800, h: 800 });
+        img.src = url;
+      }
+    });
+
+  const upload = async (list: FileList | null) => {
+    if (!list) return;
+    setError("");
+    for (const file of Array.from(list)) {
+      setBusy(`Subiendo ${file.name}…`);
+      const { w, h } = await measure(file);
+      const ext = file.name.includes(".") ? file.name.slice(file.name.lastIndexOf(".")) : "";
+      const safe = file.name
+        .slice(0, file.name.length - ext.length)
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/[^\w-]+/g, "-")
+        .slice(0, 40);
+      const path = `${UPLOAD_DIR}/${Date.now()}-${safe}__${w}x${h}__${ext.toLowerCase()}`;
+      const { error } = await supabase.storage.from(UPLOADS_BUCKET).upload(path, file, { contentType: file.type });
+      if (error) setError(`${file.name}: ${error.message}`);
+    }
+    setBusy("");
+    load();
+  };
+
+  return (
+    <>
+      <section>
+        <h3>Tus archivos</h3>
+        <label className="btn primary" style={{ width: "100%" }}>
+          ⇪ Subir imagen o video
+          <input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple hidden onChange={(e) => upload(e.target.files)} />
+        </label>
+        <p className="muted">PNG, JPG, WEBP, SVG, MP4 o WEBM, hasta 50 MB. Se guardan en la nube y los ve todo el equipo.</p>
+        {busy && <p>{busy}</p>}
+        {error && <p className="error">{error}</p>}
+      </section>
+      {picking && <p style={{ color: "#ff8a92" }}>Elige una imagen para el fondo de la escena.</p>}
+      {files === null ? (
+        <p className="muted">Cargando…</p>
+      ) : files.length === 0 ? (
+        <p className="muted">Todavía no has subido archivos.</p>
+      ) : (
+        <AssetGrid assets={files.filter((f) => !picking || f.type === "image")} onAsset={onAsset} />
+      )}
+    </>
+  );
+};

@@ -1,0 +1,236 @@
+[
+  {
+    "id": "logo-bitaxus",
+    "name": "Logo Bitaxus",
+    "category": "logos",
+    "file": "logo.png",
+    "width": 796,
+    "height": 152,
+    "type": "image"
+  },
+  {
+    "id": "moneda-libra-plata",
+    "name": "Moneda libra plata",
+    "category": "iconos",
+    "file": "assets/iconos/moneda-libra-plata.png",
+    "width": 1080,
+    "height": 1080,
+    "type": "image"
+  },
+  {
+    "id": "moneda-dolar-plata",
+    "name": "Moneda dólar plata",
+    "category": "iconos",
+    "file": "assets/iconos/moneda-dolar-plata.png",
+    "width": 1080,
+    "height": 1080,
+    "type": "image"
+  },
+  {
+    "id": "moneda-euro-plata",
+    "name": "Moneda euro plata",
+    "category": "iconos",
+    "file": "assets/iconos/moneda-euro-plata.png",
+    "width": 1080,
+    "height": 1080,
+    "type": "image"
+  },
+  {
+    "id": "moneda-yuan-plata",
+    "name": "Moneda yuan plata",
+    "category": "iconos",
+    "file": "assets/iconos/moneda-yuan-plata.png",
+    "width": 1080,
+    "height": 1080,
+    "type": "image"
+  },
+  {
+    "id": "moneda-dolar-roja",
+    "name": "Moneda dólar roja",
+    "category": "iconos",
+    "file": "assets/iconos/moneda-dolar-roja.png",
+    "width": 1080,
+    "height": 1350,
+    "type": "image"
+  },
+  {
+    "id": "moneda-euro-roja",
+    "name": "Moneda euro roja",
+    "category": "iconos",
+    "file": "assets/iconos/moneda-euro-roja.png",
+    "width": 1080,
+    "height": 1350,
+    "type": "image"
+  },
+  {
+    "id": "moneda-yuan-roja",
+    "name": "Moneda yuan roja",
+    "category": "iconos",
+    "file": "assets/iconos/moneda-yuan-roja.png",
+    "width": 1080,
+    "height": 1350,
+    "type": "image"
+  },
+  {
+    "id": "moneda-usdc-plata",
+    "name": "Moneda USDC plata",
+    "category": "iconos",
+    "file": "assets/iconos/moneda-usdc-plata.png",
+    "width": 1025,
+    "height": 1024,
+    "type": "image"
+  },
+  {
+    "id": "badge-pago-recibido",
+    "name": "Badge pago recibido",
+    "category": "iconos",
+    "file": "assets/iconos/badge-pago-recibido.png",
+    "width": 1672,
+    "height": 941,
+    "type": "image"
+  },
+  {
+    "id": "notificacion-whatsapp-bitaxus",
+    "name": "Notificación WhatsApp Bitaxus",
+    "category": "iconos",
+    "file": "assets/iconos/notificacion-whatsapp-bitaxus.png",
+    "width": 1672,
+    "height": 941,
+    "type": "image"
+  },
+  {
+    "id": "whatsapp-transferencia-abogado",
+    "name": "Transferencia por WhatsApp",
+    "category": "piezas",
+    "file": "assets/piezas/whatsapp-transferencia-abogado.png",
+    "width": 1536,
+    "height": 1024,
+    "type": "image"
+  },
+  {
+    "id": "header-eficiencia-bancaria",
+    "name": "Header eficiencia bancaria",
+    "category": "piezas",
+    "file": "assets/piezas/header-eficiencia-bancaria.png",
+    "width": 1584,
+    "height": 396,
+    "type": "image"
+  },
+  {
+    "id": "blog-te-pagaron-en-dolares",
+    "name": "Blog: te pagaron en dólares",
+    "category": "piezas",
+    "file": "assets/piezas/blog-te-pagaron-en-dolares.png",
+    "width": 1980,
+    "height": 843,
+    "type": "image"
+  },
+  {
+    "id": "portada-cobras-del-exterior",
+    "name": "Portada cobras del exterior",
+    "category": "piezas",
+    "file": "assets/piezas/portada-cobras-del-exterior.png",
+    "width": 1672,
+    "height": 941,
+    "type": "image"
+  },
+  {
+    "id": "portada-te-pagaron-ondas",
+    "name": "Portada te pagaron (ondas)",
+    "category": "piezas",
+    "file": "assets/piezas/portada-te-pagaron-ondas.png",
+    "width": 1672,
+    "height": 941,
+    "type": "image"
+  },
+  {
+    "id": "portada-te-pagaron-en-dolares",
+    "name": "Portada te pagaron en dólares",
+    "category": "piezas",
+    "file": "assets/piezas/portada-te-pagaron-en-dolares.png",
+    "width": 1672,
+    "height": 941,
+    "type": "image"
+  },
+  {
+    "id": "portada-mover-dinero-whatsapp",
+    "name": "Portada mover dinero por WhatsApp",
+    "category": "piezas",
+    "file": "assets/piezas/portada-mover-dinero-whatsapp.png",
+    "width": 1672,
+    "height": 941,
+    "type": "image"
+  },
+  {
+    "id": "post-nunca-fue-tan-facil",
+    "name": "Post nunca fue tan fácil",
+    "category": "piezas",
+    "file": "assets/piezas/post-nunca-fue-tan-facil.png",
+    "width": 1080,
+    "height": 1350,
+    "type": "image"
+  },
+  {
+    "id": "hero-pago-recibido-cta",
+    "name": "Hero pago recibido con CTA",
+    "category": "piezas",
+    "file": "assets/piezas/hero-pago-recibido-cta.png",
+    "width": 1099,
+    "height": 576,
+    "type": "image"
+  },
+  {
+    "id": "hero-pago-recibido",
+    "name": "Hero pago recibido",
+    "category": "piezas",
+    "file": "assets/piezas/hero-pago-recibido.png",
+    "width": 1099,
+    "height": 576,
+    "type": "image"
+  },
+  {
+    "id": "hero-pago-recibido-compacto-cta",
+    "name": "Hero compacto con CTA",
+    "category": "piezas",
+    "file": "assets/piezas/hero-pago-recibido-compacto-cta.png",
+    "width": 892,
+    "height": 537,
+    "type": "image"
+  },
+  {
+    "id": "hero-pago-recibido-monedas",
+    "name": "Hero pago recibido con monedas",
+    "category": "piezas",
+    "file": "assets/piezas/hero-pago-recibido-monedas.png",
+    "width": 877,
+    "height": 530,
+    "type": "image"
+  },
+  {
+    "id": "recorte-cliente-pago-recibido",
+    "name": "Recorte cliente pago recibido",
+    "category": "piezas",
+    "file": "assets/piezas/recorte-cliente-pago-recibido.png",
+    "width": 1672,
+    "height": 941,
+    "type": "image"
+  },
+  {
+    "id": "bitaxus-video-1",
+    "name": "Video Bitaxus 1",
+    "category": "videos",
+    "file": "assets/videos/bitaxus-video-1.mp4",
+    "width": 3840,
+    "height": 2160,
+    "type": "video"
+  },
+  {
+    "id": "bitaxus-video-2",
+    "name": "Video Bitaxus 2",
+    "category": "videos",
+    "file": "assets/videos/bitaxus-video-2.mp4",
+    "width": 3840,
+    "height": 2160,
+    "type": "video"
+  }
+]

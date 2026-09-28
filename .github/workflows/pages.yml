@@ -24,11 +24,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Editor (Remotion Studio) en la raíz del sitio
-      - run: npx remotion bundle --public-path=/animaciones/ --out-dir=build
-      - run: node scripts/studio-default-route.mjs
-      # Reproductor simple en /player/
+      # Editor de animaciones (web/) en la raíz del sitio
       - run: npm run build:web
+      # Remotion Studio en /studio/
+      - run: npx remotion bundle --public-path=/animaciones/studio/ --out-dir=build/studio
+      - run: node scripts/studio-default-route.mjs
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build

@@ -1,0 +1,352 @@
+import React from "react";
+import {
+  BackgroundKind,
+  Design,
+  ElementData,
+  EnterKind,
+  ExitKind,
+  Format,
+  FORMAT_SIZE,
+  LoopKind,
+  Scene,
+  Transition,
+} from "../../src/editor/types";
+import { Check, ColorField, Field, NumberField, SelectField, TextField } from "./fields";
+
+const ENTER: [EnterKind, string][] = [
+  ["none", "Sin animación"],
+  ["fade", "Aparecer"],
+  ["up", "Subir"],
+  ["down", "Bajar"],
+  ["left", "Desde la izquierda"],
+  ["right", "Desde la derecha"],
+  ["pop", "Rebote"],
+  ["zoom", "Acercar"],
+  ["blur", "Desenfoque"],
+  ["reveal", "Revelar"],
+  ["words", "Palabra por palabra"],
+  ["typewriter", "Máquina de escribir"],
+];
+const EXIT: [ExitKind, string][] = [
+  ["none", "Sin animación"],
+  ["fade", "Desvanecer"],
+  ["up", "Subir"],
+  ["down", "Bajar"],
+  ["zoom", "Alejar"],
+  ["blur", "Desenfoque"],
+];
+const LOOP: [LoopKind, string][] = [
+  ["none", "Ninguno"],
+  ["float", "Flotar"],
+  ["pulse", "Latido"],
+  ["spin", "Girar"],
+];
+const TRANSITIONS: [Transition, string][] = [
+  ["none", "Corte directo"],
+  ["fade", "Fundido"],
+  ["slide-left", "Deslizar ←"],
+  ["slide-up", "Deslizar ↑"],
+  ["wipe", "Barrido"],
+];
+const BACKGROUNDS: [BackgroundKind, string][] = [
+  ["glow", "Resplandor Bitaxus"],
+  ["solid", "Color sólido"],
+  ["gradient", "Degradado"],
+  ["image", "Imagen"],
+];
+
+type ElProps = {
+  el: ElementData;
+  sceneDuration: number;
+  onChange: (fn: (e: ElementData) => ElementData) => void;
+  onDelete: () => void;
+  onDuplicate: () => void;
+  onLayer: (dir: "up" | "down" | "top" | "bottom") => void;
+  textRef: React.Ref<HTMLTextAreaElement>;
+};
+
+export const ElementInspector: React.FC<ElProps> = ({ el, sceneDuration, onChange, onDelete, onDuplicate, onLayer, textRef }) => {
+  const set = <K extends keyof ElementData>(k: K, v: ElementData[K]) => onChange((e) => ({ ...e, [k]: v }) as ElementData);
+  const setProp = (k: string, v: unknown) =>
+    onChange((e) => ({ ...e, props: { ...(e.props as Record<string, unknown>), [k]: v } }) as ElementData);
+
+  return (
+    <>
+      <div className="group">
+        <h3>Elemento</h3>
+        <TextField label="Nombre" value={el.name ?? ""} onChange={(v) => set("name", v)} />
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <button className="btn small" onClick={onDuplicate} title="Ctrl+D">
+            Duplicar
+          </button>
+          <button className="btn small" onClick={() => onLayer("up")} title="Traer adelante">
+            ↑ Adelante
+          </button>
+          <button className="btn small" onClick={() => onLayer("down")} title="Enviar atrás">
+            ↓ Atrás
+          </button>
+          <button className="btn small" onClick={() => set("locked", !el.locked)}>
+            {el.locked ? "Desbloquear" : "Bloquear"}
+          </button>
+          <button className="btn small danger" onClick={onDelete} title="Supr">
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      <TypeFields el={el} setProp={setProp} textRef={textRef} />
+
+      <div className="group">
+        <h3>Animación</h3>
+        <div className="row">
+          <SelectField label="Entrada" value={el.enter.kind} options={ENTER} onChange={(v) => set("enter", { ...el.enter, kind: v })} />
+          <NumberField label="Duración (s)" value={el.enter.duration} step={0.1} min={0.1} max={5} onChange={(v) => set("enter", { ...el.enter, duration: v })} />
+        </div>
+        <div className="row">
+          <SelectField label="Salida" value={el.exit.kind} options={EXIT} onChange={(v) => set("exit", { ...el.exit, kind: v })} />
+          <NumberField label="Duración (s)" value={el.exit.duration} step={0.1} min={0.1} max={5} onChange={(v) => set("exit", { ...el.exit, duration: v })} />
+        </div>
+        <SelectField label="Movimiento continuo" value={el.loop} options={LOOP} onChange={(v) => set("loop", v)} />
+        <div className="row">
+          <NumberField label="Aparece (s)" value={el.start} step={0.1} min={0} max={el.end - 0.1} onChange={(v) => set("start", v)} />
+          <NumberField label="Se va (s)" value={el.end} step={0.1} min={el.start + 0.1} max={sceneDuration} onChange={(v) => set("end", v)} />
+        </div>
+      </div>
+
+      <div className="group">
+        <h3>Posición</h3>
+        <div className="row">
+          <NumberField label="X" value={el.x} onChange={(v) => set("x", v)} />
+          <NumberField label="Y" value={el.y} onChange={(v) => set("y", v)} />
+          <NumberField label="Ancho" value={el.w} min={10} onChange={(v) => set("w", v)} />
+          <NumberField label="Alto" value={el.h} min={10} onChange={(v) => set("h", v)} />
+          <NumberField label="Rotación (°)" value={el.rotation} onChange={(v) => set("rotation", v)} />
+          <NumberField label="Opacidad (%)" value={Math.round(el.opacity * 100)} min={0} max={100} onChange={(v) => set("opacity", v / 100)} />
+        </div>
+      </div>
+    </>
+  );
+};
+
+const TypeFields: React.FC<{
+  el: ElementData;
+  setProp: (k: string, v: unknown) => void;
+  textRef: React.Ref<HTMLTextAreaElement>;
+}> = ({ el, setProp, textRef }) => {
+  switch (el.type) {
+    case "text": {
+      const p = el.props;
+      return (
+        <div className="group">
+          <h3>Texto</h3>
+          <TextField label="Contenido" value={p.text} multiline inputRef={textRef} onChange={(v) => setProp("text", v)} />
+          <div className="row">
+            <SelectField label="Fuente" value={p.font} options={[["display", "Belamor (titular)"], ["body", "Montserrat (texto)"]]} onChange={(v) => setProp("font", v)} />
+            <SelectField
+              label="Grosor"
+              value={String(p.weight) as "400"}
+              options={[["400", "Normal"], ["500", "Medio"], ["600", "Semi"], ["700", "Negrita"], ["900", "Black"]] as ["400", string][]}
+              onChange={(v) => setProp("weight", Number(v))}
+            />
+            <NumberField label="Tamaño" value={p.size} min={8} onChange={(v) => setProp("size", v)} />
+            <NumberField label="Interlineado" value={p.lineHeight} step={0.05} min={0.6} max={3} onChange={(v) => setProp("lineHeight", v)} />
+            <NumberField label="Espaciado letras" value={p.letterSpacing} step={0.01} onChange={(v) => setProp("letterSpacing", v)} />
+            <SelectField label="Alineación" value={p.align} options={[["left", "Izquierda"], ["center", "Centro"], ["right", "Derecha"]]} onChange={(v) => setProp("align", v)} />
+          </div>
+          <ColorField label="Color" value={p.color} onChange={(v) => setProp("color", v)} />
+          <Check label="MAYÚSCULAS" value={p.uppercase} onChange={(v) => setProp("uppercase", v)} />
+          <Check label="Brillo del color de acento" value={p.glow} onChange={(v) => setProp("glow", v)} />
+        </div>
+      );
+    }
+    case "image":
+    case "video":
+      return (
+        <div className="group">
+          <h3>{el.type === "image" ? "Imagen" : "Video"}</h3>
+          <SelectField label="Ajuste" value={el.props.fit} options={[["contain", "Completa"], ["cover", "Rellenar caja"]]} onChange={(v) => setProp("fit", v)} />
+          <NumberField label="Esquinas redondeadas" value={el.props.radius} min={0} onChange={(v) => setProp("radius", v)} />
+          {el.type === "video" && <Check label="Sin sonido" value={el.props.muted} onChange={(v) => setProp("muted", v)} />}
+        </div>
+      );
+    case "logo":
+      return (
+        <div className="group">
+          <h3>Logo</h3>
+          <Check label="Brillo del color de acento" value={el.props.glow} onChange={(v) => setProp("glow", v)} />
+        </div>
+      );
+    case "shape":
+      return (
+        <div className="group">
+          <h3>Forma</h3>
+          <SelectField label="Tipo" value={el.props.shape} options={[["rect", "Rectángulo"], ["circle", "Círculo"]]} onChange={(v) => setProp("shape", v)} />
+          <ColorField label="Relleno" value={el.props.fill} onChange={(v) => setProp("fill", v)} />
+          <div className="row">
+            <NumberField label="Esquinas" value={el.props.radius} min={0} onChange={(v) => setProp("radius", v)} />
+            <NumberField label="Borde (px)" value={el.props.borderWidth} min={0} onChange={(v) => setProp("borderWidth", v)} />
+          </div>
+          <ColorField label="Color del borde" value={el.props.borderColor} onChange={(v) => setProp("borderColor", v)} />
+        </div>
+      );
+    case "pill":
+      return (
+        <div className="group">
+          <h3>Botón de vidrio</h3>
+          <TextField label="Texto" value={el.props.text} multiline inputRef={textRef} onChange={(v) => setProp("text", v)} />
+          <div className="row">
+            <NumberField label="Tamaño" value={el.props.size} min={8} onChange={(v) => setProp("size", v)} />
+            <SelectField label="Fuente" value={el.props.font} options={[["display", "Belamor"], ["body", "Montserrat"]]} onChange={(v) => setProp("font", v)} />
+          </div>
+          <Check label="Resplandor" value={el.props.glow} onChange={(v) => setProp("glow", v)} />
+          <Check label="Destello" value={el.props.shine} onChange={(v) => setProp("shine", v)} />
+        </div>
+      );
+    case "card":
+      return (
+        <div className="group">
+          <h3>Tarjeta</h3>
+          <TextField label="Ícono" value={el.props.icon} onChange={(v) => setProp("icon", v)} />
+          <TextField label="Título" value={el.props.title} onChange={(v) => setProp("title", v)} />
+          <TextField label="Texto" value={el.props.text} multiline inputRef={textRef} onChange={(v) => setProp("text", v)} />
+          <Check label="Resplandor" value={el.props.glow} onChange={(v) => setProp("glow", v)} />
+        </div>
+      );
+    case "counter":
+      return (
+        <div className="group">
+          <h3>Contador</h3>
+          <TextField label="Etiqueta" value={el.props.label} onChange={(v) => setProp("label", v)} />
+          <div className="row">
+            <TextField label="Moneda" value={el.props.currency} onChange={(v) => setProp("currency", v)} />
+            <NumberField label="Tamaño" value={el.props.size} min={8} onChange={(v) => setProp("size", v)} />
+            <NumberField label="Desde" value={el.props.from} onChange={(v) => setProp("from", v)} />
+            <NumberField label="Hasta" value={el.props.to} onChange={(v) => setProp("to", v)} />
+          </div>
+          <NumberField label="Tarda en contar (s)" value={el.props.countDuration} step={0.1} min={0.1} onChange={(v) => setProp("countDuration", v)} />
+          <ColorField label="Color del número" value={el.props.color} onChange={(v) => setProp("color", v)} />
+        </div>
+      );
+    case "phone": {
+      const msgs = el.props.messages;
+      const setMsgs = (m: typeof msgs) => setProp("messages", m);
+      return (
+        <div className="group">
+          <h3>Chat de WhatsApp</h3>
+          <TextField label="Nombre del contacto" value={el.props.contactName} onChange={(v) => setProp("contactName", v)} />
+          <Field label="Mensajes (aparecen en orden)">
+            {msgs.map((m, i) => (
+              <div key={`${i}-${m.from}-${m.time}-${m.text}`} className="msg">
+                <div className="row" style={{ marginBottom: 6 }}>
+                  <select
+                    className="input"
+                    value={m.from}
+                    onChange={(e) => setMsgs(msgs.map((x, j) => (j === i ? { ...x, from: e.target.value as "cliente" | "bitaxus" } : x)))}
+                  >
+                    <option value="cliente">Cliente</option>
+                    <option value="bitaxus">Contacto</option>
+                  </select>
+                  <input
+                    className="input"
+                    defaultValue={m.time}
+                    onBlur={(e) => setMsgs(msgs.map((x, j) => (j === i ? { ...x, time: e.target.value } : x)))}
+                  />
+                </div>
+                <textarea
+                  className="input"
+                  defaultValue={m.text}
+                  rows={2}
+                  onBlur={(e) => setMsgs(msgs.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))}
+                />
+                <button className="btn small danger" style={{ marginTop: 6 }} onClick={() => setMsgs(msgs.filter((_, j) => j !== i))}>
+                  Quitar
+                </button>
+              </div>
+            ))}
+            <button
+              className="btn small"
+              onClick={() => setMsgs([...msgs, { from: msgs.at(-1)?.from === "cliente" ? "bitaxus" : "cliente", text: "Nuevo mensaje", time: "10:48 AM" }])}
+            >
+              + Mensaje
+            </button>
+          </Field>
+        </div>
+      );
+    }
+  }
+};
+
+type SceneProps = {
+  design: Design;
+  scene: Scene;
+  onScene: (fn: (s: Scene) => Scene) => void;
+  onDesign: (fn: (d: Design) => Design) => void;
+  onFormat: (f: Format) => void;
+  pickImage: () => void;
+};
+
+export const SceneInspector: React.FC<SceneProps> = ({ design, scene, onScene, onDesign, onFormat, pickImage }) => {
+  const bg = scene.background;
+  const setBg = (patch: Partial<Scene["background"]>) => onScene((s) => ({ ...s, background: { ...s.background, ...patch } }));
+  return (
+    <>
+      <div className="group">
+        <h3>Escena</h3>
+        <TextField label="Nombre" value={scene.name} onChange={(v) => onScene((s) => ({ ...s, name: v }))} />
+        <div className="row">
+          <NumberField
+            label="Duración (s)"
+            value={scene.duration}
+            step={0.5}
+            min={0.5}
+            max={60}
+            onChange={(v) =>
+              onScene((s) => ({
+                ...s,
+                duration: v,
+                // Los elementos que terminaban al final siguen hasta el final.
+                elements: s.elements.map((e) => ({
+                  ...e,
+                  end: e.end >= s.duration - 0.05 ? v : Math.min(e.end, v),
+                  start: Math.min(e.start, Math.max(0, v - 0.2)),
+                })),
+              }))
+            }
+          />
+          <SelectField label="Transición de entrada" value={scene.transition} options={TRANSITIONS} onChange={(v) => onScene((s) => ({ ...s, transition: v }))} />
+        </div>
+      </div>
+
+      <div className="group">
+        <h3>Fondo</h3>
+        <SelectField label="Tipo" value={bg.kind} options={BACKGROUNDS} onChange={(v) => setBg({ kind: v })} />
+        {bg.kind !== "image" && (
+          <ColorField label={bg.kind === "glow" ? "Color del resplandor" : "Color"} value={bg.color} onChange={(v) => setBg({ color: v })} />
+        )}
+        {(bg.kind === "gradient" || bg.kind === "glow" || bg.kind === "image") && (
+          <ColorField label={bg.kind === "gradient" ? "Segundo color" : "Color base"} value={bg.color2} onChange={(v) => setBg({ color2: v })} />
+        )}
+        {bg.kind === "image" && (
+          <button className="btn small" onClick={pickImage}>
+            {bg.image ? "Cambiar imagen" : "Elegir imagen"} (pestaña Assets)
+          </button>
+        )}
+        <Check label="Rejilla de puntos" value={bg.dots} onChange={(v) => setBg({ dots: v })} />
+      </div>
+
+      <div className="group">
+        <h3>Diseño</h3>
+        <SelectField
+          label="Formato"
+          value={design.format}
+          options={(Object.keys(FORMAT_SIZE) as Format[]).map((f) => [f, FORMAT_SIZE[f].label])}
+          onChange={onFormat}
+        />
+        <ColorField label="Color de acento (brillos, botones)" value={design.accent} onChange={(v) => onDesign((d) => ({ ...d, accent: v }))} />
+        <p className="muted" style={{ lineHeight: 1.5 }}>
+          Haz clic en un elemento del lienzo para editarlo. Doble clic sobre un texto para cambiar lo que dice.
+        </p>
+      </div>
+    </>
+  );
+};

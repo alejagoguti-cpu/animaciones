@@ -2,20 +2,27 @@
 
 Videos promocionales hechos con [Remotion](https://www.remotion.dev/) (React → MP4), con el look de [bitaxus.com](https://www.bitaxus.com/): fondo negro, resplandores rojos, rejilla de puntos y botones de vidrio.
 
-## Ver en la web
+## En la web
 
-- **Editor (Remotion Studio):** https://alejagoguti-cpu.github.io/animaciones/
-- **Reproductor simple:** https://alejagoguti-cpu.github.io/animaciones/player/
+- **Editor de animaciones (tipo Canva):** https://alejagoguti-cpu.github.io/animaciones/
+- **Remotion Studio (video original):** https://alejagoguti-cpu.github.io/animaciones/studio/
 
-Ambos se publican solos cada vez que se sube un cambio a `main` (ver `.github/workflows/pages.yml`).
+Se publican solos cada vez que se sube un cambio a `main` (ver `.github/workflows/pages.yml`).
 
-## Editar desde la web
+## Editor de animaciones
 
-1. Abre el editor y despliega el panel derecho (botón arriba a la derecha) → pestaña **Props**.
-2. Cambia textos, mensajes del chat, montos, color de acento o la duración de cada escena. El video se actualiza en vivo.
-3. Para descargar el MP4: botón **Render in browser** (o tecla `R`) → **Render video**.
+Código en `web/` (la app) y `src/editor/` (formato de los diseños y cómo se dibujan en video).
 
-Los cambios hechos en la web no se guardan en el repo. Para dejarlos fijos, copia el contenido de la pestaña **JSON** del panel Props y pégalo en `defaultPromoProps` de `src/schema.ts`.
+- **Acceso:** se entra con un enlace que llega al correo. Solo pueden entrar los correos de la tabla `allowed_emails` en Supabase (proyecto `bitaxus-animaciones`).
+- **Guardado:** cada diseño se guarda solo en la tabla `designs`; los archivos subidos van al bucket `uploads`.
+- **Lienzo:** arrastrar, redimensionar (Shift mantiene proporción), rotar, imanes al centro y a los bordes (Alt los desactiva).
+- **Elementos:** textos (Belamor / Montserrat), logo, botón de vidrio, tarjeta, teléfono con chat, contador, formas, imágenes y videos.
+- **Animaciones:** entrada, salida y movimiento continuo por elemento; cuándo aparece y se va se ajusta en la línea de tiempo.
+- **Escenas:** varias escenas con transición y duración propias; formatos 9:16, 4:5, 1:1 y 16:9.
+- **Exportar:** el MP4 se genera en el navegador (Chrome o Edge).
+- **Assets de marca:** `public/assets/` con su lista en `public/assets/manifest.json`.
+- **Atajos:** Ctrl+Z / Ctrl+Y, Ctrl+D duplicar, Supr eliminar, flechas mover (Shift = 10 px), Espacio reproducir.
+- **Modo prueba sin guardar:** `#/demo` al final de la dirección.
 
 ## Uso
 

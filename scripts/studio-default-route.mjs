@@ -2,7 +2,7 @@
 // Si se abre la página sin ninguna, se abre el video principal.
 import { readFileSync, writeFileSync } from "node:fs";
 
-const file = "build/index.html";
+const file = "build/studio/index.html";
 const script =
   '<script>if(!location.search.startsWith("?/"))' +
   'history.replaceState(null,"",location.pathname+"?/BitaxusPromo")</script>';
