@@ -3,10 +3,11 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } fr
 import { GlassPill } from "../components/GlassPill";
 import { FadeText, KineticText } from "../components/KineticText";
 import { Logo } from "../components/Logo";
+import { PromoProps } from "../schema";
 import { colors, fonts } from "../theme";
 
 // Escena 1: "VENDISTE COMO NUNCA ¿Y LA PLATA?"
-export const HookScene: React.FC = () => {
+export const HookScene: React.FC<PromoProps["escena1"]> = ({ frase, linea1, linea2, pregunta }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -22,11 +23,11 @@ export const HookScene: React.FC = () => {
       <Logo width={300} style={{ position: "absolute", top: 120, left: 90 }} />
 
       <FadeText delay={0} style={{ fontSize: 36, color: colors.whiteMuted, marginBottom: 36 }}>
-        Cobrar debería ser tan fácil como enviar un mensaje.
+        {frase}
       </FadeText>
 
-      <KineticText text="Vendiste" delay={6} fontSize={150} />
-      <KineticText text="como nunca" delay={14} fontSize={150} />
+      <KineticText text={linea1} delay={6} fontSize={150} />
+      <KineticText text={linea2} delay={14} fontSize={150} />
 
       <div
         style={{
@@ -37,7 +38,7 @@ export const HookScene: React.FC = () => {
       >
         <GlassPill style={{ padding: "26px 44px" }}>
           <span style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 94, color: colors.white, whiteSpace: "nowrap" }}>
-            ¿Y LA PLATA?
+            {pregunta}
           </span>
           <div
             style={{

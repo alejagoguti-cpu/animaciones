@@ -3,29 +3,28 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } fr
 import { ChatBubble, ChatMessage } from "../components/ChatBubble";
 import { KineticText } from "../components/KineticText";
 import { Phone } from "../components/Phone";
+import { useAccent } from "../accent";
+import { PromoProps } from "../schema";
 import { colors, fonts } from "../theme";
 
-const messages: ChatMessage[] = [
-  { from: "user", text: "Quiero programar un recaudo.", time: "10:44 AM", at: 20 },
-  {
-    from: "bitaxus",
-    text: "¡Claro! Vamos paso a paso. ¿Cuánto vas a cobrar y cuál es el concepto?",
-    time: "10:45 AM",
-    at: 42,
-  },
-  { from: "user", text: "$1.250.000 por servicios de publicidad.", time: "10:46 AM", at: 92 },
-  {
-    from: "bitaxus",
-    text: "Perfecto. Ahora cuéntame quién realizará el pago y te ayudo a dejar todo programado.",
-    time: "10:47 AM",
-    at: 112,
-  },
-];
-
 // Escena 2: el agente de Bitaxus en WhatsApp.
-export const ChatScene: React.FC = () => {
+export const ChatScene: React.FC<PromoProps["escena2Chat"] & { durationInFrames: number }> = ({
+  titular,
+  nombreContacto,
+  mensajes,
+  durationInFrames,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+
+  // Los mensajes se reparten a lo largo de la escena.
+  const step = Math.max(12, (durationInFrames - 60) / Math.max(1, mensajes.length));
+  const messages: ChatMessage[] = mensajes.map((m, i) => ({
+    from: m.quien === "cliente" ? "user" : "bitaxus",
+    text: m.texto,
+    time: m.hora,
+    at: Math.round(20 + i * step),
+  }));
 
   const enter = spring({ frame, fps, config: { damping: 16, stiffness: 90 } });
   const phoneY = interpolate(enter, [0, 1], [900, 0]);
@@ -35,7 +34,7 @@ export const ChatScene: React.FC = () => {
   return (
     <AbsoluteFill style={{ alignItems: "center" }}>
       <div style={{ position: "absolute", top: 150, left: 90, right: 90 }}>
-        <KineticText text="No necesitas otra aplicación" fontSize={78} delay={4} stagger={3} />
+        <KineticText text={titular} fontSize={78} delay={4} stagger={3} />
       </div>
 
       <div
@@ -46,7 +45,7 @@ export const ChatScene: React.FC = () => {
         }}
       >
         <Phone width={780} height={1300}>
-          <ChatHeader />
+          <ChatHeader name={nombreContacto} />
           <div
             style={{
               position: "absolute",
@@ -62,7 +61,7 @@ export const ChatScene: React.FC = () => {
             }}
           >
             {messages.map((m, i) => (
-              <ChatBubble key={i} message={m} />
+              <ChatBubble key={i} message={m} contactName={nombreContacto} />
             ))}
           </div>
           <ChatInput />
@@ -72,7 +71,9 @@ export const ChatScene: React.FC = () => {
   );
 };
 
-const ChatHeader: React.FC = () => (
+const ChatHeader: React.FC<{ name: string }> = ({ name }) => {
+  const accent = useAccent();
+  return (
   <div
     style={{
       position: "absolute",
@@ -93,7 +94,7 @@ const ChatHeader: React.FC = () => (
         width: 84,
         height: 84,
         borderRadius: 42,
-        background: `radial-gradient(circle at 30% 30%, ${colors.red}, ${colors.redDeep})`,
+        background: `radial-gradient(circle at 30% 30%, ${accent.color}, ${accent.deep()})`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -102,14 +103,15 @@ const ChatHeader: React.FC = () => (
         fontSize: 40,
       }}
     >
-      B
+      {name.charAt(0).toUpperCase()}
     </div>
     <div style={{ fontFamily: fonts.body, color: "#fff" }}>
-      <div style={{ fontSize: 36, fontWeight: 700 }}>Bitaxus</div>
+      <div style={{ fontSize: 36, fontWeight: 700 }}>{name}</div>
       <div style={{ fontSize: 26, opacity: 0.8 }}>en línea</div>
     </div>
   </div>
-);
+  );
+};
 
 const ChatInput: React.FC = () => (
   <div

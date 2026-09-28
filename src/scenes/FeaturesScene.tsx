@@ -2,25 +2,22 @@ import React from "react";
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { GlassPill } from "../components/GlassPill";
 import { KineticText } from "../components/KineticText";
+import { useAccent } from "../accent";
+import { PromoProps } from "../schema";
 import { colors, fonts } from "../theme";
 
-const features = [
-  { icon: "↓", title: "Recaudos", text: "Programa y registra los pagos que esperas recibir." },
-  { icon: "↑", title: "Pagos y dispersiones", text: "Organiza pagos individuales o múltiples." },
-  { icon: "◎", title: "Decisiones más claras", text: "Ordena tus movimientos y decide mejor." },
-];
-
 // Escena 3: recibe, paga y decide.
-export const FeaturesScene: React.FC = () => {
+export const FeaturesScene: React.FC<PromoProps["escena3Beneficios"]> = ({ titular, beneficios }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const accent = useAccent();
 
   return (
     <AbsoluteFill style={{ padding: "0 80px", justifyContent: "center", gap: 60 }}>
-      <KineticText text="Recibe, paga y decide con más claridad." fontSize={88} stagger={3} />
+      <KineticText text={titular} fontSize={88} stagger={3} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
-        {features.map((f, i) => {
+        {beneficios.map((f, i) => {
           const p = spring({
             frame: frame - 22 - i * 10,
             fps,
@@ -28,7 +25,7 @@ export const FeaturesScene: React.FC = () => {
           });
           return (
             <div
-              key={f.title}
+              key={i}
               style={{
                 opacity: p,
                 transform: `translateX(${interpolate(p, [0, 1], [-260, 0])}px)`,
@@ -42,7 +39,7 @@ export const FeaturesScene: React.FC = () => {
                     flexShrink: 0,
                     borderRadius: 55,
                     background: "radial-gradient(circle at 30% 30%, #fff, #bdbdbd)",
-                    color: colors.redDeep,
+                    color: accent.deep(),
                     fontSize: 56,
                     fontWeight: 900,
                     display: "flex",
@@ -52,11 +49,11 @@ export const FeaturesScene: React.FC = () => {
                     boxShadow: "0 0 30px rgba(255,255,255,0.25)",
                   }}
                 >
-                  {f.icon}
+                  {f.icono}
                 </div>
                 <div style={{ fontFamily: fonts.body, color: colors.white }}>
-                  <div style={{ fontSize: 46, fontWeight: 700 }}>{f.title}</div>
-                  <div style={{ fontSize: 32, color: colors.whiteSoft, marginTop: 6 }}>{f.text}</div>
+                  <div style={{ fontSize: 46, fontWeight: 700 }}>{f.titulo}</div>
+                  <div style={{ fontSize: 32, color: colors.whiteSoft, marginTop: 6 }}>{f.texto}</div>
                 </div>
               </GlassPill>
             </div>

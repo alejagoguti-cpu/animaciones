@@ -1,4 +1,5 @@
 import React from "react";
+import { useAccent } from "../accent";
 import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
 import { colors } from "../theme";
 
@@ -8,6 +9,7 @@ export const Background: React.FC<{ intensity?: number }> = ({
   intensity = 1,
 }) => {
   const frame = useCurrentFrame();
+  const accent = useAccent();
   const t = frame / 30;
 
   const glowA = {
@@ -26,8 +28,8 @@ export const Background: React.FC<{ intensity?: number }> = ({
         style={{
           opacity: intensity * pulse,
           background: [
-            `radial-gradient(60% 40% at ${glowA.x}% ${glowA.y}%, ${colors.redGlow} 0%, rgba(110,10,16,0.25) 45%, transparent 75%)`,
-            `radial-gradient(55% 35% at ${glowB.x}% ${glowB.y}%, rgba(193,18,31,0.45) 0%, rgba(110,10,16,0.2) 50%, transparent 80%)`,
+            `radial-gradient(60% 40% at ${glowA.x}% ${glowA.y}%, ${accent.alpha(0.55)} 0%, ${accent.deep(0.25)} 45%, transparent 75%)`,
+            `radial-gradient(55% 35% at ${glowB.x}% ${glowB.y}%, ${accent.alpha(0.45)} 0%, ${accent.deep(0.2)} 50%, transparent 80%)`,
           ].join(","),
         }}
       />

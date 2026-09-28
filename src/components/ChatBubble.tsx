@@ -10,7 +10,10 @@ export type ChatMessage = {
   at: number;
 };
 
-export const ChatBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
+export const ChatBubble: React.FC<{ message: ChatMessage; contactName: string }> = ({
+  message,
+  contactName,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const isUser = message.from === "user";
@@ -47,7 +50,7 @@ export const ChatBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
     >
       {!isUser && (
         <div style={{ color: colors.whatsappGreen, fontWeight: 700, fontSize: 28, marginBottom: 6 }}>
-          Bitaxus
+          {contactName}
         </div>
       )}
       <div>{message.text}</div>

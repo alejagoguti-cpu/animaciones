@@ -2,7 +2,8 @@ import "./static-base";
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Player } from "@remotion/player";
-import { BitaxusPromo, PROMO_DURATION } from "../src/BitaxusPromo";
+import { BitaxusPromo, promoDuration } from "../src/BitaxusPromo";
+import { defaultPromoProps } from "../src/schema";
 import { colors, fonts, FPS } from "../src/theme";
 
 const formats = [
@@ -84,7 +85,8 @@ const App: React.FC = () => {
           <Player
             key={format.id}
             component={BitaxusPromo}
-            durationInFrames={PROMO_DURATION}
+            durationInFrames={promoDuration(defaultPromoProps.duracion)}
+            inputProps={defaultPromoProps}
             fps={FPS}
             compositionWidth={format.width}
             compositionHeight={format.height}

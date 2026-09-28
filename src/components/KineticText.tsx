@@ -1,4 +1,5 @@
 import React from "react";
+import { useAccent } from "../accent";
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors, fonts } from "../theme";
 
@@ -23,6 +24,7 @@ export const KineticText: React.FC<{
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const words = text.split(" ");
+  const accent = useAccent();
 
   return (
     <div
@@ -35,7 +37,7 @@ export const KineticText: React.FC<{
         textTransform: "uppercase",
         textAlign: align,
         letterSpacing: "0.01em",
-        textShadow: "0 0 40px rgba(193,18,31,0.35)",
+        textShadow: `0 0 40px ${accent.alpha(0.35)}`,
         ...style,
       }}
     >
