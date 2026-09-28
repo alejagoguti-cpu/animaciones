@@ -8,12 +8,15 @@
     "render": "remotion render BitaxusPromo out/bitaxus-promo.mp4",
     "render:square": "remotion render BitaxusPromoSquare out/bitaxus-promo-square.mp4",
     "still": "remotion still BitaxusPromo out/portada.png --frame=60",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p web",
+    "web": "vite",
+    "build:web": "vite build"
   },
   "dependencies": {
     "@remotion/cli": "4.0.529",
     "@remotion/fonts": "^4.0.529",
     "@remotion/google-fonts": "4.0.529",
+    "@remotion/player": "4.0.529",
     "@remotion/transitions": "4.0.529",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -21,6 +24,8 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.0",
-    "typescript": "^5.9.0"
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^5.9.0",
+    "vite": "^8.3.1"
   }
 }

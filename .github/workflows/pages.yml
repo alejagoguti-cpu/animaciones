@@ -24,11 +24,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Genera el Remotion Studio como sitio estático, servido en /animaciones/
-      - run: npx remotion bundle --public-path=/animaciones/ --out-dir=build
-      # Si alguien abre un enlace directo a una composición, GitHub Pages
-      # devuelve 404.html; así el estudio carga igual.
-      - run: cp build/index.html build/404.html
+      # Página web con el reproductor de Remotion (web/ → build/)
+      - run: npm run build:web
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build

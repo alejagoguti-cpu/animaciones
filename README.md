@@ -4,7 +4,7 @@ Videos promocionales hechos con [Remotion](https://www.remotion.dev/) (React →
 
 ## Ver en la web
 
-El estudio se publica solo en **https://alejagoguti-cpu.github.io/animaciones/** cada vez que se sube un cambio a `main` (ver `.github/workflows/pages.yml`).
+La página con el reproductor (`web/`) se publica sola en **https://alejagoguti-cpu.github.io/animaciones/** cada vez que se sube un cambio a `main` (ver `.github/workflows/pages.yml`).
 
 ## Uso
 
