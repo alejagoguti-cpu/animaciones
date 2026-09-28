@@ -28,6 +28,7 @@ export const KineticText: React.FC<{
     <div
       style={{
         fontFamily: fonts.display,
+        fontWeight: 700,
         fontSize,
         lineHeight: 1.05,
         color,

@@ -1,23 +1,15 @@
 import React from "react";
-import { colors, fonts } from "../theme";
+import { Img, staticFile } from "remotion";
 
-// Wordmark de texto. Para usar el logo real, pon el archivo en
-// public/logo.png y cambia esto por <Img src={staticFile("logo.png")} />.
-export const Logo: React.FC<{ size?: number; style?: React.CSSProperties }> = ({
-  size = 56,
+// Logo oficial de Bitaxus (public/logo.png, 796x152, blanco con contorno).
+export const Logo: React.FC<{ width?: number; style?: React.CSSProperties }> = ({
+  width = 300,
   style,
 }) => {
   return (
-    <div
-      style={{
-        fontFamily: fonts.display,
-        fontSize: size,
-        color: colors.white,
-        letterSpacing: "0.18em",
-        ...style,
-      }}
-    >
-      BITAXUS
-    </div>
+    <Img
+      src={staticFile("logo.png")}
+      style={{ width, height: "auto", display: "block", ...style }}
+    />
   );
 };

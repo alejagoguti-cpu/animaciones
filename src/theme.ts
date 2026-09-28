@@ -1,5 +1,6 @@
+import { loadFont } from "@remotion/fonts";
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
-import { loadFont as loadAudiowide } from "@remotion/google-fonts/Audiowide";
+import { staticFile } from "remotion";
 
 // Montserrat es la fuente de texto de bitaxus.com.
 const montserrat = loadMontserrat("normal", {
@@ -7,15 +8,24 @@ const montserrat = loadMontserrat("normal", {
   subsets: ["latin", "latin-ext"],
 });
 
-// La web usa "Belamor" para los titulares. Audiowide es el reemplazo libre
-// más parecido; si tienes la licencia de Belamor, mira el README para usarla.
-const audiowide = loadAudiowide("normal", {
-  weights: ["400"],
-  subsets: ["latin", "latin-ext"],
-});
+// Belamor es la fuente de los titulares de bitaxus.com (archivos en public/fonts).
+const belamorWeights = [
+  ["Regular", "400"],
+  ["Medium", "500"],
+  ["SemiBold", "600"],
+  ["Bold", "700"],
+] as const;
+
+belamorWeights.forEach(([name, weight]) =>
+  loadFont({
+    family: "Belamor",
+    url: staticFile(`fonts/Belamor-${name}.otf`),
+    weight,
+  }),
+);
 
 export const fonts = {
-  display: audiowide.fontFamily,
+  display: "Belamor",
   body: montserrat.fontFamily,
 };
 

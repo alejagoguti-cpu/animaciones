@@ -12,14 +12,22 @@ export const CtaScene: React.FC = () => {
 
   const logo = spring({ frame, fps, config: { damping: 12, stiffness: 100 } });
   const button = spring({ frame: frame - 26, fps, config: { damping: 10, stiffness: 150 } });
-  const letterSpacing = interpolate(logo, [0, 1], [0.6, 0.18]);
+  // El logo se "dibuja" de izquierda a derecha con un brillo rojo detrás.
+  const reveal = interpolate(frame, [0, 22], [0, 100], { extrapolateRight: "clamp" });
+  const glow = interpolate(frame, [10, 30], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const ring = interpolate(frame % 45, [0, 45], [1, 1.25]);
   const ringOpacity = interpolate(frame % 45, [0, 45], [0.6, 0]);
 
   return (
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", gap: 70 }}>
       <div style={{ opacity: logo, transform: `scale(${interpolate(logo, [0, 1], [0.7, 1])})` }}>
-        <Logo size={130} style={{ letterSpacing: `${letterSpacing}em` }} />
+        <Logo
+          width={820}
+          style={{
+            clipPath: `inset(0 ${100 - reveal}% 0 0)`,
+            filter: `drop-shadow(0 0 ${30 * glow}px rgba(193,18,31,0.9))`,
+          }}
+        />
       </div>
 
       <FadeText delay={14} style={{ fontSize: 46, textAlign: "center", color: colors.white, padding: "0 100px" }}>

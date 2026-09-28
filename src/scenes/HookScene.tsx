@@ -19,7 +19,7 @@ export const HookScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ padding: "0 90px", justifyContent: "center" }}>
-      <Logo size={44} style={{ position: "absolute", top: 120, left: 90 }} />
+      <Logo width={300} style={{ position: "absolute", top: 120, left: 90 }} />
 
       <FadeText delay={0} style={{ fontSize: 36, color: colors.whiteMuted, marginBottom: 36 }}>
         Cobrar debería ser tan fácil como enviar un mensaje.
@@ -36,7 +36,7 @@ export const HookScene: React.FC = () => {
         }}
       >
         <GlassPill style={{ padding: "26px 44px" }}>
-          <span style={{ fontFamily: fonts.display, fontSize: 94, color: colors.white, whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 94, color: colors.white, whiteSpace: "nowrap" }}>
             ¿Y LA PLATA?
           </span>
           <div
