@@ -3,6 +3,7 @@ import { Composition } from "remotion";
 import { BitaxusPromo, calculatePromoMetadata, promoDuration } from "./BitaxusPromo";
 import { defaultPromoProps, promoSchema } from "./schema";
 import { FPS } from "./theme";
+import { ReelEdit, REEL_FRAMES } from "./ReelEdit";
 import { DesignVideo } from "./editor/render/DesignVideo";
 import { TEMPLATES } from "./editor/templates";
 import { totalFrames } from "./editor/timing";
@@ -22,6 +23,7 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
       />
+      <Composition id="ReelEdit" component={ReelEdit} durationInFrames={REEL_FRAMES} fps={FPS} width={1080} height={1920} />
       {/* Feed de Instagram (4:5) */}
       <Composition
         id="BitaxusPromoSquare"

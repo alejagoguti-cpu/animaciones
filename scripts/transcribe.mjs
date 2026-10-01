@@ -1,0 +1,11 @@
+import { installWhisperCpp, downloadWhisperModel, transcribe, toCaptions } from "@remotion/install-whisper-cpp";
+import path from "node:path"; import fs from "node:fs";
+import { execSync } from "node:child_process";
+const dir = path.resolve("work/whisper");
+await installWhisperCpp({ to: dir, version: "1.5.5" });
+await downloadWhisperModel({ model: "base", folder: dir });
+execSync(`npx remotion ffmpeg -y -i work/src.mp4 -ar 16000 -ac 1 work/audio16.wav`, { stdio: "ignore" });
+const out = await transcribe({ inputPath: path.resolve("work/audio16.wav"), whisperPath: dir, model: "base", whisperCppVersion: "1.5.5", tokenLevelTimestamps: true, language: "es" });
+const { captions } = toCaptions({ whisperCppOutput: out });
+fs.writeFileSync("work/captions.json", JSON.stringify(captions, null, 1));
+console.log(captions.map((c) => `${c.startMs}-${c.endMs} ${c.text}`).join("\n"));
