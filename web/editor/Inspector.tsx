@@ -354,8 +354,14 @@ export const SceneInspector: React.FC<SceneProps> = ({ design, scene, onScene, o
         <SelectField label="Tipo" value={bg.kind} options={BACKGROUNDS} onChange={(v) => setBg({ kind: v })} />
         {bg.kind === "glow" && (
           <>
-            <SelectField label="Estilo del resplandor" value={bg.glowStyle ?? "orbes"} options={GLOW_STYLES} onChange={(v) => setBg({ glowStyle: v })} />
+            <SelectField label="Estilo del resplandor" value={bg.glowStyle ?? "orbes"} options={GLOW_STYLES} onChange={(v) => setBg({ glowStyle: v, glowPoints: undefined })} />
             <NumberField label="Intensidad (1 = normal)" value={bg.glowIntensity ?? 1} step={0.1} min={0.2} max={1.4} onChange={(v) => setBg({ glowIntensity: v })} />
+          </>
+        )}
+        {bg.kind === "glow" && (
+          <>
+            <p className="muted" style={{ margin: 0 }}>Arrastra los puntos blancos del lienzo para mover la luz (con la escena sin nada seleccionado).</p>
+            {bg.glowPoints && <button className="btn small" onClick={() => setBg({ glowPoints: undefined })}>Restablecer posición</button>}
           </>
         )}
         {bg.kind !== "image" && (

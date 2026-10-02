@@ -42,6 +42,8 @@ export type Background = {
   // Solo para el tipo "glow": forma del resplandor (por defecto, orbes) e intensidad (1 = normal).
   glowStyle?: GlowStyle;
   glowIntensity?: number;
+  // Posición (0–1 del lienzo) de cada fuente de luz; si falta, la del estilo. Se arrastran en el lienzo.
+  glowPoints?: { x: number; y: number }[];
 };
 
 type ElementBase = {

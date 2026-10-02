@@ -15,7 +15,7 @@ Código en `web/` (la app) y `src/editor/` (formato de los diseños y cómo se d
 
 - **Acceso libre:** sin inicio de sesión. Cualquiera con el enlace puede crear, editar y borrar diseños (proyecto Supabase `bitaxus-animaciones`).
 - **Guardado:** cada diseño se guarda solo en la tabla `designs`; los archivos subidos van al bucket `uploads`.
-- **Fondos:** resplandor en 10 estilos (orbes, aurora, malla, esquina, halo central, desde arriba, amanecer, lateral, ondas y rayos), con color e intensidad editables; también color sólido, degradado e imagen.
+- **Fondos:** resplandor en 10 estilos (orbes, aurora, malla, esquina, halo central, desde arriba, amanecer, lateral, ondas y rayos), con color e intensidad editables y las luces se arrastran con el mouse sobre el lienzo; también color sólido, degradado e imagen.
 - **Lienzo:** arrastrar, redimensionar (Shift mantiene proporción), rotar, imanes al centro y a los bordes (Alt los desactiva).
 - **Elementos:** textos (Belamor / Montserrat), logo, botón de vidrio, tarjeta, teléfono con chat, contador, formas, imágenes y videos.
 - **Vectores:** pluma para dibujar (clic = punto, arrastrar = curva), 16 formas e íconos, relleno/degradado/borde, y edición de puntos con doble clic.

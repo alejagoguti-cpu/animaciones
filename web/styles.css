@@ -307,3 +307,6 @@ input[type="range"] { width: 100%; accent-color: var(--red); }
 
 .group-box { position: absolute; outline: 2px solid var(--red-2); pointer-events: none; z-index: 6; }
 .group-box .handle { pointer-events: auto; }
+
+.glow-handle { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: rgba(255,255,255,0.95); border: 3px solid var(--red-2); box-shadow: 0 0 0 4px rgba(0,0,0,0.35), 0 0 18px rgba(255,255,255,0.6); cursor: grab; z-index: 9; }
+.glow-handle:active { cursor: grabbing; }

@@ -4,8 +4,9 @@ import { DesignVideo } from "../../src/editor/render/DesignVideo";
 import { getAnimState } from "../../src/editor/render/animation";
 import { totalFrames } from "../../src/editor/timing";
 import { Design, ElementData, FORMAT_SIZE, FPS, VectorNode } from "../../src/editor/types";
-import { updateElement } from "../store";
+import { updateElement, updateScene } from "../store";
 import { InlineCard, InlineText } from "./InlineText";
+import { anchorsOf } from "../../src/editor/render/glowStyles";
 import { PenLayer } from "./PenLayer";
 import { PointEditor } from "./PointEditor";
 
@@ -40,6 +41,7 @@ type Drag =
   | { kind: "move"; id: string; startX: number; startY: number; orig: ElementData; group: ElementData[] }
   | { kind: "resize"; id: string; dir: string; startX: number; startY: number; orig: ElementData }
   | { kind: "rotate"; id: string; cx: number; cy: number; orig: ElementData }
+  | { kind: "glow"; index: number }
   | { kind: "gresize"; dir: string; startX: number; startY: number; box: Box; group: ElementData[] };
 
 type Box = { x: number; y: number; w: number; h: number };
@@ -152,6 +154,19 @@ export const Stage: React.FC<Props> = (p) => {
   const onPointerMove = (e: React.PointerEvent) => {
     const d = drag.current;
     if (!d) return;
+    if (d.kind === "glow") {
+      const r = innerRef.current!.getBoundingClientRect();
+      const x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+      const y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+      p.preview((des) =>
+        updateScene(des, p.sceneIdx, (s) => {
+          const pts = anchorsOf(s.background.glowStyle ?? "orbes", s.background.glowPoints).map((q) => ({ ...q }));
+          pts[d.index] = { x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000 };
+          return { ...s, background: { ...s.background, glowPoints: pts } };
+        }),
+      );
+      return;
+    }
     if (d.kind === "gresize") {
       const b = d.box;
       const dx = (e.clientX - d.startX) / scale;
@@ -424,6 +439,24 @@ export const Stage: React.FC<Props> = (p) => {
                 ))}
               </div>
             )}
+            {scene.background.kind === "glow" && p.selectedIds.length === 0 && !p.penActive &&
+              anchorsOf(scene.background.glowStyle ?? "orbes", scene.background.glowPoints).map((q, i) => (
+                <div
+                  key={`glow${i}`}
+                  className="glow-handle"
+                  title="Arrastra para mover la luz"
+                  style={{ left: q.x * W * scale, top: q.y * H * scale }}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    try {
+                      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                    } catch {
+                      // el arrastre sigue por burbujeo
+                    }
+                    drag.current = { kind: "glow", index: i };
+                  }}
+                />
+              ))}
             {marquee && <div className="marquee" style={{ left: marquee.x * scale, top: marquee.y * scale, width: marquee.w * scale, height: marquee.h * scale }} />}
             {p.penActive && (
               <PenLayer scale={scale} width={W} height={H} onDone={p.onPenDone} onCancel={p.onPenCancel} />

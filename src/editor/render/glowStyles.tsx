@@ -31,6 +31,23 @@ const lighten = (hex: string, k = 0.28) => {
   return `rgb(${m(r)},${m(g)},${m(b)})`;
 };
 
+// Fuentes de luz de cada estilo (posición normalizada 0–1). El usuario las arrastra en el lienzo.
+export const DEFAULT_ANCHORS: Record<GlowStyle, { x: number; y: number }[]> = {
+  orbes: [{ x: 0.2, y: 0.12 }, { x: 0.85, y: 0.78 }],
+  aurora: [{ x: 0.3, y: 0.22 }, { x: 0.62, y: 0.5 }, { x: 0.4, y: 0.8 }],
+  malla: [{ x: 0.2, y: 0.15 }, { x: 0.85, y: 0.32 }, { x: 0.15, y: 0.7 }, { x: 0.8, y: 0.92 }],
+  esquina: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+  centro: [{ x: 0.5, y: 0.5 }],
+  arriba: [{ x: 0.5, y: 0 }],
+  abajo: [{ x: 0.5, y: 1 }],
+  lateral: [{ x: 0, y: 0.5 }, { x: 1, y: 0.5 }],
+  ondas: [{ x: 0.5, y: 0.66 }],
+  rayos: [{ x: 0.5, y: 0 }],
+};
+
+export const anchorsOf = (style: GlowStyle, points?: { x: number; y: number }[]) =>
+  DEFAULT_ANCHORS[style].map((d, i) => points?.[i] ?? d);
+
 type Blob = { cx: number; cy: number; rx: number; ry: number; rot?: number; a: number; light?: boolean };
 
 export const GlowStyleLayer: React.FC<{
@@ -41,7 +58,10 @@ export const GlowStyleLayer: React.FC<{
   t: number;
   color: string;
   intensity: number;
-}> = ({ style, id, width: w, height: h, t, color, intensity }) => {
+  points?: { x: number; y: number }[];
+}> = ({ style, id, width: w, height: h, t, color, intensity, points }) => {
+  const an = anchorsOf(style, points);
+  const A = (i: number) => an[Math.min(i, an.length - 1)];
   const m = Math.max(w, h);
   const sw = Math.sin(t * 0.5);
   const cw = Math.cos(t * 0.4);
@@ -52,47 +72,45 @@ export const GlowStyleLayer: React.FC<{
   switch (style) {
     case "aurora":
       blobs.push(
-        { cx: w * (0.3 + 0.08 * sw), cy: h * 0.22, rx: m * 0.95, ry: m * 0.17, rot: -30, a: 0.55 },
-        { cx: w * (0.62 - 0.07 * cw), cy: h * 0.5, rx: m * 0.95, ry: m * 0.14, rot: -30, a: 0.42, light: true },
-        { cx: w * (0.4 + 0.08 * cw), cy: h * 0.8, rx: m * 0.95, ry: m * 0.16, rot: -30, a: 0.5 },
+        { cx: w * (A(0).x + 0.08 * sw), cy: h * A(0).y, rx: m * 0.95, ry: m * 0.17, rot: -30, a: 0.55 },
+        { cx: w * (A(1).x - 0.07 * cw), cy: h * A(1).y, rx: m * 0.95, ry: m * 0.14, rot: -30, a: 0.42, light: true },
+        { cx: w * (A(2).x + 0.08 * cw), cy: h * A(2).y, rx: m * 0.95, ry: m * 0.16, rot: -30, a: 0.5 },
       );
       break;
     case "malla":
       blobs.push(
-        { cx: w * (0.2 + 0.06 * sw), cy: h * (0.15 + 0.04 * cw), rx: m * 0.55, ry: m * 0.55, a: 0.6 },
-        { cx: w * (0.85 - 0.06 * cw), cy: h * (0.32 + 0.05 * sw), rx: m * 0.5, ry: m * 0.5, a: 0.42, light: true },
-        { cx: w * (0.15 + 0.05 * cw), cy: h * (0.7 - 0.04 * sw), rx: m * 0.5, ry: m * 0.5, a: 0.38, light: true },
-        { cx: w * (0.8 + 0.05 * sw), cy: h * (0.92 - 0.04 * cw), rx: m * 0.6, ry: m * 0.6, a: 0.55 },
+        { cx: w * (A(0).x + 0.06 * sw), cy: h * (A(0).y + 0.04 * cw), rx: m * 0.55, ry: m * 0.55, a: 0.6 },
+        { cx: w * (A(1).x - 0.06 * cw), cy: h * (A(1).y + 0.05 * sw), rx: m * 0.5, ry: m * 0.5, a: 0.42, light: true },
+        { cx: w * (A(2).x + 0.05 * cw), cy: h * (A(2).y - 0.04 * sw), rx: m * 0.5, ry: m * 0.5, a: 0.38, light: true },
+        { cx: w * (A(3).x + 0.05 * sw), cy: h * (A(3).y - 0.04 * cw), rx: m * 0.6, ry: m * 0.6, a: 0.55 },
       );
       break;
     case "esquina":
       blobs.push(
-        { cx: 0, cy: 0, rx: m * 1.05, ry: m * 0.85, rot: 6 * sw, a: 0.8 },
-        { cx: w, cy: h, rx: m * 0.6, ry: m * 0.5, a: 0.3 },
+        { cx: w * A(0).x, cy: h * A(0).y, rx: m * 1.05, ry: m * 0.85, rot: 6 * sw, a: 0.8 },
+        { cx: w * A(1).x, cy: h * A(1).y, rx: m * 0.6, ry: m * 0.5, a: 0.3 },
       );
       break;
     case "centro":
       blobs.push(
-        { cx: w / 2, cy: h / 2, rx: w * 0.75 * pulse, ry: h * 0.5 * pulse, a: 0.5 },
-        { cx: w / 2, cy: h / 2, rx: w * 0.34 * pulse, ry: h * 0.24 * pulse, a: 0.4, light: true },
+        { cx: w * A(0).x, cy: h * A(0).y, rx: w * 0.75 * pulse, ry: h * 0.5 * pulse, a: 0.5 },
+        { cx: w * A(0).x, cy: h * A(0).y, rx: w * 0.34 * pulse, ry: h * 0.24 * pulse, a: 0.4, light: true },
       );
       break;
     case "arriba":
+    case "abajo": {
+      const dir = style === "arriba" ? -1 : 1;
+      const cy = h * (A(0).y + dir * 0.05);
       blobs.push(
-        { cx: w / 2, cy: -h * 0.05, rx: w * 1.05, ry: h * 0.6 * (0.95 + 0.05 * sw), a: 0.75 },
-        { cx: w / 2, cy: -h * 0.02, rx: w * 0.5, ry: h * 0.3, a: 0.4, light: true },
+        { cx: w * A(0).x, cy, rx: w * 1.05, ry: h * 0.6 * (0.95 + 0.05 * sw), a: 0.75 },
+        { cx: w * A(0).x, cy: h * (A(0).y + dir * 0.02), rx: w * 0.5, ry: h * 0.3, a: 0.4, light: true },
       );
       break;
-    case "abajo":
-      blobs.push(
-        { cx: w / 2, cy: h * 1.05, rx: w * 1.05, ry: h * 0.6 * (0.95 + 0.05 * sw), a: 0.75 },
-        { cx: w / 2, cy: h * 1.02, rx: w * 0.5, ry: h * 0.3, a: 0.4, light: true },
-      );
-      break;
+    }
     case "lateral":
       blobs.push(
-        { cx: 0, cy: h * (0.5 + 0.08 * sw), rx: w * 0.6, ry: h * 0.75, a: 0.7 },
-        { cx: w, cy: h * (0.5 - 0.08 * sw), rx: w * 0.6, ry: h * 0.75, a: 0.7 },
+        { cx: w * A(0).x, cy: h * (A(0).y + 0.08 * sw), rx: w * 0.6, ry: h * 0.75, a: 0.7 },
+        { cx: w * A(1).x, cy: h * (A(1).y - 0.08 * sw), rx: w * 0.6, ry: h * 0.75, a: 0.7 },
       );
       break;
     default:
@@ -126,6 +144,7 @@ export const GlowStyleLayer: React.FC<{
   });
 
   if (style === "ondas") {
+    const dy = A(0).y - 0.66;
     const waves = [
       { base: 0.52, amp: 0.05, freq: 1.6, speed: 0.7, a: 0.5, light: false },
       { base: 0.66, amp: 0.045, freq: 2.2, speed: -0.55, a: 0.4, light: true },
@@ -135,7 +154,7 @@ export const GlowStyleLayer: React.FC<{
       const gid = `${id}w${i}`;
       const c = wv.light ? light : color;
       defs.push(
-        <linearGradient key={gid} id={gid} gradientUnits="userSpaceOnUse" x1={0} y1={h * (wv.base - wv.amp)} x2={0} y2={h}>
+        <linearGradient key={gid} id={gid} gradientUnits="userSpaceOnUse" x1={0} y1={h * (wv.base + dy - wv.amp)} x2={0} y2={h}>
           <stop offset="0" stopColor={c} stopOpacity={Math.min(1, wv.a * k)} />
           <stop offset="1" stopColor={c} stopOpacity={0} />
         </linearGradient>,
@@ -144,7 +163,7 @@ export const GlowStyleLayer: React.FC<{
       let d = `M 0 ${h}`;
       for (let s = 0; s <= steps; s++) {
         const x = (s / steps) * w;
-        const y = h * wv.base + Math.sin((s / steps) * Math.PI * 2 * wv.freq + t * wv.speed * 2) * h * wv.amp;
+        const y = h * (wv.base + dy) + Math.sin((s / steps) * Math.PI * 2 * wv.freq + t * wv.speed * 2) * h * wv.amp;
         d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
       }
       d += ` L ${w} ${h} Z`;
@@ -163,12 +182,12 @@ export const GlowStyleLayer: React.FC<{
     );
     [-2, -1, 0, 1, 2].forEach((n) => {
       const sway = Math.sin(t * 0.6 + n) * w * 0.04;
-      const bx = w * 0.5 + n * w * 0.3 + sway;
+      const bx = w * 0.5 + n * w * 0.3 + sway + (A(0).x - 0.5) * w;
       const half = w * (0.05 + 0.02 * Math.abs(n));
       shapes.push(
         <polygon
           key={`${gid}${n}`}
-          points={`${w * 0.5 + n * w * 0.03},${-h * 0.1} ${bx - half},${h * 1.05} ${bx + half},${h * 1.05}`}
+          points={`${w * A(0).x + n * w * 0.03},${-h * 0.1} ${bx - half},${h * 1.05} ${bx + half},${h * 1.05}`}
           fill={`url(#${gid})`}
           opacity={0.9}
         />,

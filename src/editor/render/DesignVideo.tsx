@@ -7,7 +7,7 @@ import { wipe } from "@remotion/transitions/wipe";
 import { AccentProvider } from "../../accent";
 import { getTransitionFrames, sceneFrames } from "../timing";
 import { Background, Design, Scene, Transition } from "../types";
-import { GlowStyleLayer } from "./glowStyles";
+import { anchorsOf, GlowStyleLayer } from "./glowStyles";
 import { ElementView, resolveSrc } from "./ElementView";
 
 export type DesignVideoProps = { design: Design };
@@ -91,8 +91,9 @@ const SceneBackground: React.FC<{ bg: Background }> = ({ bg }) => {
     layer = <AbsoluteFill style={{ backgroundColor: bg.color2 }} />;
   }
 
-  const a = { x: 0.2 + Math.sin(t * 0.45) * 0.12, y: 0.12 + Math.cos(t * 0.35) * 0.08 };
-  const b = { x: 0.85 + Math.cos(t * 0.3) * 0.1, y: 0.78 + Math.sin(t * 0.4) * 0.1 };
+  const orb = anchorsOf("orbes", bg.glowPoints);
+  const a = { x: orb[0].x + Math.sin(t * 0.45) * 0.12, y: orb[0].y + Math.cos(t * 0.35) * 0.08 };
+  const b = { x: orb[1].x + Math.cos(t * 0.3) * 0.1, y: orb[1].y + Math.sin(t * 0.4) * 0.1 };
   const dotY = -((frame * 0.4) % 36);
 
   return (
@@ -133,7 +134,7 @@ const SceneBackground: React.FC<{ bg: Background }> = ({ bg }) => {
             </g>
           )}
           {bg.kind === "glow" && (bg.glowStyle ?? "orbes") !== "orbes" && (
-            <GlowStyleLayer style={bg.glowStyle!} id={gid} width={width} height={height} t={t} color={bg.color} intensity={bg.glowIntensity ?? 1} />
+            <GlowStyleLayer style={bg.glowStyle!} id={gid} width={width} height={height} t={t} color={bg.color} intensity={bg.glowIntensity ?? 1} points={bg.glowPoints} />
           )}
           {bg.dots && <rect width={width} height={height} fill={`url(#${gid}p)`} mask={`url(#${gid}k)`} />}
           {bg.kind === "glow" && <rect width={width} height={height} fill={`url(#${gid}v)`} />}
