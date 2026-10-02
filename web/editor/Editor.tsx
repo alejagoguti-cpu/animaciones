@@ -80,11 +80,11 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     setGlobalFrame(target);
   };
 
-  const selectScene = (i: number) => {
+  const selectScene = (i: number, atStart = false) => {
     playerRef.current?.pause();
     setSceneIdx(i);
     setSelectedId(null);
-    const target = starts[i] + Math.min(45, frames[i] - 1);
+    const target = starts[i] + (atStart ? 0 : Math.min(45, frames[i] - 1));
     playerRef.current?.seekTo(target);
     setGlobalFrame(target);
   };
