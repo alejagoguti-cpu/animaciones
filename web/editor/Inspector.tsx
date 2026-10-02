@@ -309,6 +309,17 @@ type SceneProps = {
 export const SceneInspector: React.FC<SceneProps> = ({ design, scene, onScene, onDesign, onFormat, pickImage }) => {
   const bg = scene.background;
   const setBg = (patch: Partial<Scene["background"]>) => onScene((s) => ({ ...s, background: { ...s.background, ...patch } }));
+  const setDuration = (v: number) =>
+    onScene((s) => ({
+      ...s,
+      duration: v,
+      // Los elementos que terminaban al final siguen hasta el final.
+      elements: s.elements.map((e) => ({
+        ...e,
+        end: e.end >= s.duration - 0.05 ? v : Math.min(e.end, v),
+        start: Math.min(e.start, Math.max(0, v - 0.2)),
+      })),
+    }));
   return (
     <>
       <Section title="Escena">
@@ -320,20 +331,16 @@ export const SceneInspector: React.FC<SceneProps> = ({ design, scene, onScene, o
             step={0.5}
             min={0.5}
             max={60}
-            onChange={(v) =>
-              onScene((s) => ({
-                ...s,
-                duration: v,
-                // Los elementos que terminaban al final siguen hasta el final.
-                elements: s.elements.map((e) => ({
-                  ...e,
-                  end: e.end >= s.duration - 0.05 ? v : Math.min(e.end, v),
-                  start: Math.min(e.start, Math.max(0, v - 0.2)),
-                })),
-              }))
-            }
+            onChange={setDuration}
           />
           <SelectField label="Transición de entrada" value={scene.transition} options={TRANSITIONS} onChange={(v) => onScene((s) => ({ ...s, transition: v }))} />
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {[3, 4, 5, 6, 7, 8, 10, 15].map((d) => (
+            <button key={d} className={`chip ${scene.duration === d ? "on" : ""}`} onClick={() => setDuration(d)}>
+              {d} s
+            </button>
+          ))}
         </div>
       </Section>
 
