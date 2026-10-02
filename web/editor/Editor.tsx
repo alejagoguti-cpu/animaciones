@@ -278,7 +278,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     if (!el || el.locked) return;
     setSelectedId(id);
     playerRef.current?.pause();
-    if (el.type === "text" || el.type === "pill") {
+    if (el.type === "text" || el.type === "pill" || el.type === "card") {
       setInlineId(id);
       return;
     }
@@ -568,6 +568,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         editingPointsId={editingPointsId}
         onPointsEnd={onPointsEnd}
         inlineId={inlineId}
+        onInlineCardCommit={(id, props) => setEl(id, (x) => (x.type === "card" ? { ...x, props: { ...x.props, ...props } } : x))}
         onInlineCommit={(id, text) => setEl(id, (x) => ({ ...x, props: { ...(x.props as object), text } }) as ElementData)}
         onInlineClose={() => setInlineId(null)}
       />

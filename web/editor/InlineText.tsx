@@ -83,3 +83,90 @@ export const InlineText: React.FC<{
     />
   );
 };
+
+// Edición de la tarjeta sobre el lienzo: ícono, título y texto. Usa las mismas
+// medidas con que se dibuja la tarjeta (920 px de ancho, escalada).
+export const InlineCard: React.FC<{
+  el: Extract<ElementData, { type: "card" }>;
+  scale: number;
+  onCommit: (props: { icon: string; title: string; text: string }) => void;
+  onClose: () => void;
+}> = ({ el, scale, onCommit, onClose }) => {
+  const [icon, setIcon] = useState(el.props.icon);
+  const [title, setTitle] = useState(el.props.title);
+  const [text, setText] = useState(el.props.text);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const s = (el.w / 920) * scale;
+
+  useEffect(() => {
+    titleRef.current?.focus();
+    titleRef.current?.select();
+  }, []);
+
+  const done = (e: React.FocusEvent) => {
+    // Solo se cierra cuando el foco sale de los tres campos.
+    if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+    if (icon !== el.props.icon || title !== el.props.title || text !== el.props.text) onCommit({ icon, title, text });
+    onClose();
+  };
+
+  const field: React.CSSProperties = {
+    width: "100%",
+    margin: 0,
+    padding: 0,
+    border: "none",
+    outline: "3px solid #3ad0ff",
+    background: "rgba(0,0,0,0.45)",
+    resize: "none",
+    overflow: "hidden",
+    fontFamily: fonts.body,
+    color: "#fff",
+    whiteSpace: "pre-wrap",
+    cursor: "text",
+    // Se agranda con el texto (Chrome y Edge).
+    ["fieldSizing" as string]: "content",
+  };
+
+  return (
+    <div
+      onBlur={done}
+      onPointerDown={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        e.stopPropagation();
+        if (e.key === "Escape") onClose();
+      }}
+      style={{ position: "absolute", left: 0, top: 0, width: 920, height: el.h / (el.w / 920), transform: `scale(${s})`, transformOrigin: "top left", zIndex: 7 }}
+    >
+      <input
+        value={icon}
+        onChange={(e) => setIcon(e.target.value)}
+        maxLength={3}
+        spellCheck={false}
+        style={{ position: "absolute", left: 40, top: "50%", transform: "translateY(-50%)", width: 110, height: 110, borderRadius: 55, border: "none", outline: "3px solid #3ad0ff", background: "rgba(255,255,255,0.9)", color: "#6e0a10", fontSize: 56, fontWeight: 900, textAlign: "center", fontFamily: fonts.body }}
+      />
+      <div style={{ position: "absolute", left: 174, right: 40, top: 0, bottom: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 6 }}>
+        <textarea
+          ref={titleRef}
+          rows={1}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              (e.currentTarget.parentElement?.querySelector("textarea:last-of-type") as HTMLElement | null)?.focus();
+            }
+          }}
+          spellCheck={false}
+          style={{ ...field, fontSize: 46, fontWeight: 700, lineHeight: 1.2 }}
+        />
+        <textarea
+          rows={1}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          spellCheck={false}
+          style={{ ...field, fontSize: 32, lineHeight: 1.3, color: "rgba(255,255,255,0.85)" }}
+        />
+      </div>
+    </div>
+  );
+};

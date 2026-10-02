@@ -18,7 +18,7 @@ Código en `web/` (la app) y `src/editor/` (formato de los diseños y cómo se d
 - **Lienzo:** arrastrar, redimensionar (Shift mantiene proporción), rotar, imanes al centro y a los bordes (Alt los desactiva).
 - **Elementos:** textos (Belamor / Montserrat), logo, botón de vidrio, tarjeta, teléfono con chat, contador, formas, imágenes y videos.
 - **Vectores:** pluma para dibujar (clic = punto, arrastrar = curva), 16 formas e íconos, relleno/degradado/borde, y edición de puntos con doble clic.
-- **Doble clic:** en textos y botones se escribe directo sobre el lienzo; en vectores, edita los puntos.
+- **Doble clic:** en textos, botones y tarjetas se escribe directo sobre el lienzo (en la tarjeta: ícono, título y texto; Enter pasa de uno al siguiente); en vectores, edita los puntos.
 - **Animaciones:** entrada, salida y movimiento continuo por elemento; cuándo aparece y se va se ajusta en la línea de tiempo.
 - **Escenas:** varias escenas con transición y duración propias; formatos 9:16, 4:5, 1:1 y 16:9.
 - **Exportar:** el MP4 se genera en el navegador (Chrome o Edge).

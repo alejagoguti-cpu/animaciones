@@ -5,7 +5,7 @@ import { getAnimState } from "../../src/editor/render/animation";
 import { totalFrames } from "../../src/editor/timing";
 import { Design, ElementData, FORMAT_SIZE, FPS, VectorNode } from "../../src/editor/types";
 import { updateElement } from "../store";
-import { InlineText } from "./InlineText";
+import { InlineCard, InlineText } from "./InlineText";
 import { PenLayer } from "./PenLayer";
 import { PointEditor } from "./PointEditor";
 
@@ -30,6 +30,7 @@ type Props = {
   onPointsEnd: () => void;
   inlineId: string | null;
   onInlineCommit: (id: string, text: string) => void;
+  onInlineCardCommit: (id: string, props: { icon: string; title: string; text: string }) => void;
   onInlineClose: () => void;
 };
 
@@ -242,6 +243,9 @@ export const Stage: React.FC<Props> = (p) => {
                       onCommit={(text) => p.onInlineCommit(el.id, text)}
                       onClose={p.onInlineClose}
                     />
+                  )}
+                  {selected && p.inlineId === el.id && el.type === "card" && (
+                    <InlineCard el={el} scale={scale} onCommit={(props) => p.onInlineCardCommit(el.id, props)} onClose={p.onInlineClose} />
                   )}
                   {selected && p.editingPointsId === el.id && el.type === "vector" && (
                     <PointEditor
