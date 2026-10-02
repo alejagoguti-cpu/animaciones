@@ -21,7 +21,7 @@ Código en `web/` (la app) y `src/editor/` (formato de los diseños y cómo se d
 - **Doble clic:** en textos, botones y tarjetas se escribe directo sobre el lienzo (en la tarjeta: ícono, título y texto; Enter pasa de uno al siguiente); en vectores, edita los puntos.
 - **Animaciones:** entrada, salida y movimiento continuo por elemento; cuándo aparece y se va se ajusta en la línea de tiempo.
 - **Escenas:** varias escenas con transición y duración propias; formatos 9:16, 4:5, 1:1 y 16:9.
-- **Exportar:** el MP4 se genera en el navegador (Chrome o Edge).
+- **Exportar:** video MP4 (HD, 2K o 4K) o imagen estática PNG/JPG del fotograma donde está el cabezal; se genera en el navegador (Chrome o Edge) y la pestaña debe estar visible.
 - **Assets de marca:** `public/assets/` con su lista en `public/assets/manifest.json`.
 - **Selección múltiple:** Shift o Ctrl + clic suma o quita elementos, arrastrar sobre una zona vacía dibuja un recuadro de selección, Ctrl+A selecciona todo. Mover, copiar, cortar, pegar, duplicar y eliminar funcionan con todos a la vez.
 - **Atajos:** Ctrl+Z / Ctrl+Y deshacer y rehacer, Ctrl+C / Ctrl+X / Ctrl+V copiar, cortar y pegar (entre escenas, diseños y pestañas; si pegas texto o una imagen del portapapeles, crea un texto o una imagen), Ctrl+D duplicar, Supr eliminar, clic derecho sobre el lienzo para el menú (copiar, cortar, pegar, duplicar, capas, eliminar), Ctrl+] / Ctrl+[ subir y bajar capa (con Shift, al frente o al fondo), Tab y Shift+Tab cambiar de elemento, Inicio / Fin ir al principio o final de la escena, flechas mover (Shift = 10 px), Espacio reproducir.

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { canRenderMediaOnWeb, renderMediaOnWeb } from "@remotion/web-renderer";
+import { canRenderMediaOnWeb, renderMediaOnWeb, renderStillOnWeb } from "@remotion/web-renderer";
 import { DesignVideo } from "../../src/editor/render/DesignVideo";
 import { totalFrames } from "../../src/editor/timing";
 import { Design, FORMAT_SIZE, FPS } from "../../src/editor/types";
@@ -13,7 +13,10 @@ const QUALITIES = [
 ] as const;
 
 // Exporta el MP4 directamente en el navegador (sin servidor).
-export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () => void }> = ({ design, name, onClose }) => {
+export const ExportDialog: React.FC<{ design: Design; name: string; frame: number; onClose: () => void }> = ({ design, name, frame, onClose }) => {
+  // Video (MP4 animado) o imagen estática (el fotograma donde está el cabezal).
+  const [mode, setMode] = useState<"video" | "imagen">("video");
+  const [imgFormat, setImgFormat] = useState<"png" | "jpeg">("png");
   const [state, setState] = useState<"idle" | "checking" | "rendering" | "done" | "error">("idle");
   const [progress, setProgress] = useState(0);
   const [url, setUrl] = useState<string | null>(null);
@@ -25,7 +28,9 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
   const width = Math.round(baseW * scale / 2) * 2;
   const height = Math.round(baseH * scale / 2) * 2;
   const frames = totalFrames(design);
-  const fileName = `${name.trim().replace(/[^\wÀ-ſ -]+/g, "").replace(/\s+/g, "-") || "bitaxus"}.mp4`;
+  const stillFrame = Math.max(0, Math.min(frames - 1, frame));
+  const base = name.trim().replace(/[^\wÀ-ſ -]+/g, "").replace(/\s+/g, "-") || "bitaxus";
+  const fileName = mode === "video" ? `${base}.mp4` : `${base}.${imgFormat === "jpeg" ? "jpg" : "png"}`;
 
   useEffect(() => () => {
     abort.current?.abort();
@@ -44,6 +49,20 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
 
   const start = async () => {
     setError("");
+    if (mode === "imagen") {
+      setState("rendering");
+      setProgress(0);
+      try {
+        const still = await renderStillOnWeb({ composition, frame: stillFrame, inputProps: { design }, scale });
+        const blob = await still.blob({ format: imgFormat, quality: 0.95 });
+        setUrl(URL.createObjectURL(blob));
+        setState("done");
+      } catch (e) {
+        setState("error");
+        setError(e instanceof Error ? e.message : String(e));
+      }
+      return;
+    }
     setState("checking");
     try {
       const check = await canRenderMediaOnWeb({ width, height, container: "mp4", videoBitrate: "very-high" });
@@ -78,10 +97,28 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
   return (
     <div className="modal-back" onClick={() => state !== "rendering" && onClose()}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2 className="display">Exportar video</h2>
+        <h2 className="display">Exportar</h2>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {([["video", "Video (MP4)"], ["imagen", "Imagen estática"]] as const).map(([id, label]) => (
+            <button key={id} className={`chip ${mode === id ? "on" : ""}`} disabled={state === "rendering" || state === "checking"} onClick={() => { setMode(id); setState("idle"); setUrl(null); }}>
+              {label}
+            </button>
+          ))}
+          {mode === "imagen" && ([["png", "PNG"], ["jpeg", "JPG"]] as const).map(([id, label]) => (
+            <button key={id} className={`chip ${imgFormat === id ? "on" : ""}`} disabled={state === "rendering"} onClick={() => { setImgFormat(id); setState("idle"); setUrl(null); }}>
+              {label}
+            </button>
+          ))}
+        </div>
+        {mode === "imagen" ? (
+          <p className="muted" style={{ margin: 0 }}>
+            {imgFormat.toUpperCase()} · {width}×{height}. Se exporta el fotograma donde está el cabezal ({(stillFrame / FPS).toFixed(1)} s). Mueve el cabezal en la línea de tiempo para elegir otro momento.
+          </p>
+        ) : (
         <p className="muted" style={{ margin: 0 }}>
           MP4 · {width}×{height} · {(frames / FPS).toFixed(1)} s. Se genera aquí mismo en tu navegador. El 4K tarda más y usa más memoria; si falla, prueba con 2K. Deja esta pestaña abierta y a la vista mientras tanto: si cambias de pestaña o minimizas, el navegador lo pausa.
         </p>
+        )}
         <div style={{ display: "flex", gap: 6 }}>
           {QUALITIES.map((q) => (
             <button key={q.id} className={`chip ${quality === q.id ? "on" : ""}`} disabled={state === "rendering" || state === "checking"} onClick={() => { setQuality(q.id); setState("idle"); setUrl(null); }}>
@@ -99,7 +136,11 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
         )}
         {state === "error" && <p className="error">{error}</p>}
         {state === "done" && url && (
-          <video src={url} controls style={{ width: "100%", maxHeight: 320, background: "#000", borderRadius: 10 }} />
+          mode === "video" ? (
+            <video src={url} controls style={{ width: "100%", maxHeight: 320, background: "#000", borderRadius: 10 }} />
+          ) : (
+            <img src={url} style={{ width: "100%", maxHeight: 320, objectFit: "contain", background: "#000", borderRadius: 10 }} />
+          )
         )}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           {state === "rendering" ? (
@@ -113,11 +154,11 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
           )}
           {state === "done" && url ? (
             <a className="btn primary" href={url} download={fileName}>
-              Descargar MP4
+              {mode === "video" ? "Descargar MP4" : `Descargar ${imgFormat === "jpeg" ? "JPG" : "PNG"}`}
             </a>
           ) : (
             <button className="btn primary" onClick={start} disabled={state === "rendering" || state === "checking"}>
-              {state === "error" ? "Reintentar" : "Generar MP4"}
+              {state === "error" ? "Reintentar" : mode === "video" ? "Generar MP4" : "Generar imagen"}
             </button>
           )}
         </div>

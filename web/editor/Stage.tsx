@@ -39,7 +39,10 @@ type Props = {
 type Drag =
   | { kind: "move"; id: string; startX: number; startY: number; orig: ElementData; group: ElementData[] }
   | { kind: "resize"; id: string; dir: string; startX: number; startY: number; orig: ElementData }
-  | { kind: "rotate"; id: string; cx: number; cy: number; orig: ElementData };
+  | { kind: "rotate"; id: string; cx: number; cy: number; orig: ElementData }
+  | { kind: "gresize"; dir: string; startX: number; startY: number; box: Box; group: ElementData[] };
+
+type Box = { x: number; y: number; w: number; h: number };
 
 const SNAP = 10;
 
@@ -123,9 +126,79 @@ export const Stage: React.FC<Props> = (p) => {
     }
   };
 
+  // Caja que envuelve a todos los elementos seleccionados (para estirarlos juntos).
+  const groupEls = p.selectedIds.length > 1 ? scene.elements.filter((x) => p.selectedIds.includes(x.id) && !x.locked) : [];
+  const groupBox: Box | null = groupEls.length > 1
+    ? (() => {
+        const x0 = Math.min(...groupEls.map((x) => x.x));
+        const y0 = Math.min(...groupEls.map((x) => x.y));
+        const x1 = Math.max(...groupEls.map((x) => x.x + x.w));
+        const y1 = Math.max(...groupEls.map((x) => x.y + x.h));
+        return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+      })()
+    : null;
+
+  const onGroupDown = (e: React.PointerEvent, dir: string) => {
+    e.stopPropagation();
+    if (!groupBox) return;
+    try {
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // sin captura el arrastre sigue por burbujeo
+    }
+    drag.current = { kind: "gresize", dir, startX: e.clientX, startY: e.clientY, box: groupBox, group: groupEls };
+  };
+
   const onPointerMove = (e: React.PointerEvent) => {
     const d = drag.current;
     if (!d) return;
+    if (d.kind === "gresize") {
+      const b = d.box;
+      const dx = (e.clientX - d.startX) / scale;
+      const dy = (e.clientY - d.startY) / scale;
+      let { x, y, w, h } = b;
+      if (d.dir.includes("e")) w = b.w + dx;
+      if (d.dir.includes("w")) {
+        w = b.w - dx;
+        x = b.x + dx;
+      }
+      if (d.dir.includes("s")) h = b.h + dy;
+      if (d.dir.includes("n")) {
+        h = b.h - dy;
+        y = b.y + dy;
+      }
+      // Con Shift se conserva la proporción del grupo.
+      if (e.shiftKey) {
+        h = w * (b.h / b.w);
+        if (d.dir.includes("n")) y = b.y + b.h - h;
+      }
+      w = Math.max(20, w);
+      h = Math.max(20, h);
+      const sx = w / b.w;
+      const sy = h / b.h;
+      p.preview((des) =>
+        d.group.reduce(
+          (acc, g) =>
+            updateElement(acc, p.sceneIdx, g.id, (el) => {
+              const next = {
+                ...el,
+                x: Math.round(x + (g.x - b.x) * sx),
+                y: Math.round(y + (g.y - b.y) * sy),
+                w: Math.max(4, Math.round(g.w * sx)),
+                h: Math.max(4, Math.round(g.h * sy)),
+              } as ElementData;
+              // El tamaño de letra de textos, botones y contadores crece con el grupo.
+              const gp = g.props as { size?: number };
+              if (typeof gp.size === "number" && (g.type === "text" || g.type === "pill" || g.type === "counter")) {
+                next.props = { ...(next.props as object), size: Math.max(8, Math.round(gp.size * ((sx + sy) / 2))) } as never;
+              }
+              return next;
+            }),
+          des,
+        ),
+      );
+      return;
+    }
     const o = d.orig;
 
     if (d.kind === "move") {
@@ -340,6 +413,17 @@ export const Stage: React.FC<Props> = (p) => {
                 </div>
               );
             })}
+            {groupBox && (
+              <div
+                className="group-box"
+                style={{ left: groupBox.x * scale, top: groupBox.y * scale, width: groupBox.w * scale, height: groupBox.h * scale }}
+              >
+                <span className="el-label">{groupEls.length} elementos</span>
+                {["nw", "ne", "sw", "se", "e", "w"].map((dir) => (
+                  <div key={dir} className={`handle ${dir}`} onPointerDown={(e) => onGroupDown(e, dir)} />
+                ))}
+              </div>
+            )}
             {marquee && <div className="marquee" style={{ left: marquee.x * scale, top: marquee.y * scale, width: marquee.w * scale, height: marquee.h * scale }} />}
             {p.penActive && (
               <PenLayer scale={scale} width={W} height={H} onDone={p.onPenDone} onCancel={p.onPenCancel} />

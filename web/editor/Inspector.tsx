@@ -180,6 +180,8 @@ const TypeFields: React.FC<{
             <NumberField label="Interlineado" value={p.lineHeight} step={0.05} min={0.6} max={3} onChange={(v) => setProp("lineHeight", v)} />
             <NumberField label="Espaciado letras" value={p.letterSpacing} step={0.01} onChange={(v) => setProp("letterSpacing", v)} />
             <SelectField label="Alineación" value={p.align} options={[["left", "Izquierda"], ["center", "Centro"], ["right", "Derecha"]]} onChange={(v) => setProp("align", v)} />
+            <SelectField label="Posición vertical" value={p.valign ?? "top"} options={[["top", "Arriba"], ["middle", "Centro"], ["bottom", "Abajo"]]} onChange={(v) => setProp("valign", v)} />
+            <NumberField label="Subir / bajar (px)" value={p.offsetY ?? 0} step={2} onChange={(v) => setProp("offsetY", v)} />
           </div>
           <ColorField label="Color" value={p.color} onChange={(v) => setProp("color", v)} />
           <Check label="MAYÚSCULAS" value={p.uppercase} onChange={(v) => setProp("uppercase", v)} />
@@ -221,6 +223,8 @@ const TypeFields: React.FC<{
           <div className="row">
             <NumberField label="Tamaño" value={el.props.size} min={8} onChange={(v) => setProp("size", v)} />
             <SelectField label="Fuente" value={el.props.font} options={[["display", "Belamor"], ["body", "Montserrat"]]} onChange={(v) => setProp("font", v)} />
+            <SelectField label="Posición vertical" value={el.props.valign ?? "middle"} options={[["top", "Arriba"], ["middle", "Centro"], ["bottom", "Abajo"]]} onChange={(v) => setProp("valign", v)} />
+            <NumberField label="Subir / bajar (px)" value={el.props.offsetY ?? 0} step={2} onChange={(v) => setProp("offsetY", v)} />
           </div>
           <Check label="Resplandor" value={el.props.glow} onChange={(v) => setProp("glow", v)} />
           <Check label="Destello" value={el.props.shine} onChange={(v) => setProp("shine", v)} />

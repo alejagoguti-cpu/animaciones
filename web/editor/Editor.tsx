@@ -121,6 +121,16 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     selectScene(0);
   }, []);
 
+  // Al duplicar, agregar, mover o borrar escenas, la escena activa cambia: el cabezal
+  // se lleva a ella para que el lienzo y el video queden en la misma escena.
+  useEffect(() => {
+    if (playing) return;
+    if (sceneAtFrame(design, globalFrame) === safeIdx) return;
+    const target = starts[safeIdx] + Math.min(45, frames[safeIdx] - 1);
+    playerRef.current?.seekTo(target);
+    setGlobalFrame(target);
+  }, [safeIdx, design.scenes.length]);
+
   // Al reproducir el video completo, la escena activa sigue al cabezal.
   useEffect(() => {
     if (playing && !loopScene) {
@@ -696,7 +706,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         )}
       </footer>
 
-      {exporting && <ExportDialog design={design} name={name} onClose={() => setExporting(false)} />}
+      {exporting && <ExportDialog design={design} name={name} frame={globalFrame} onClose={() => setExporting(false)} />}
     </div>
   );
 };

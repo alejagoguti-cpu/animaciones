@@ -104,13 +104,21 @@ const textStyle = (p: TextProps): React.CSSProperties => ({
   wordBreak: "break-word",
 });
 
+const VALIGN = { top: "flex-start", middle: "center", bottom: "flex-end" } as const;
+
 const TextBody: React.FC<{ el: Extract<ElementData, { type: "text" }>; localFrame: number }> = ({ el, localFrame }) => {
   const accent = useAccent();
   const p = el.props;
   const shadow = p.glow ? `0 0 40px ${accent.alpha(0.45)}` : undefined;
 
+  const place = (node: React.ReactNode) => (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: VALIGN[p.valign ?? "top"], transform: p.offsetY ? `translateY(${p.offsetY}px)` : undefined }}>
+      {node}
+    </div>
+  );
+
   if (el.enter.kind === "words") {
-    return (
+    return place(
       <KineticText
         text={p.text}
         delay={Math.round(el.start * FPS)}
@@ -119,7 +127,7 @@ const TextBody: React.FC<{ el: Extract<ElementData, { type: "text" }>; localFram
         color={p.color}
         align={p.align}
         style={{ ...textStyle(p), textShadow: shadow ?? "none" }}
-      />
+      />,
     );
   }
 
@@ -134,7 +142,7 @@ const TextBody: React.FC<{ el: Extract<ElementData, { type: "text" }>; localFram
     text = p.text.slice(0, chars);
   }
 
-  return <div style={{ ...textStyle(p), textShadow: shadow }}>{text}</div>;
+  return place(<div style={{ ...textStyle(p), textShadow: shadow }}>{text}</div>);
 };
 
 const LogoBody: React.FC<{ glow: boolean }> = ({ glow }) => {
@@ -158,7 +166,7 @@ const PillBody: React.FC<{ el: Extract<ElementData, { type: "pill" }>; localFram
   return (
     <GlassPill
       glow={p.glow}
-      style={{ width: "100%", height: "100%", boxSizing: "border-box", justifyContent: "center", padding: "0 32px" }}
+      style={{ width: "100%", height: "100%", boxSizing: "border-box", justifyContent: "center", alignItems: VALIGN[p.valign ?? "middle"], padding: p.valign === "top" ? "14px 32px 0" : p.valign === "bottom" ? "0 32px 14px" : "0 32px" }}
     >
       <span
         style={{
@@ -167,6 +175,7 @@ const PillBody: React.FC<{ el: Extract<ElementData, { type: "pill" }>; localFram
           fontSize: p.size,
           color: colors.white,
           whiteSpace: "nowrap",
+          transform: p.offsetY ? `translateY(${p.offsetY}px)` : undefined,
         }}
       >
         {p.text}
