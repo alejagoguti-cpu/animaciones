@@ -4,6 +4,14 @@ import { DesignVideo } from "../../src/editor/render/DesignVideo";
 import { totalFrames } from "../../src/editor/timing";
 import { Design, FORMAT_SIZE, FPS } from "../../src/editor/types";
 
+// Calidades de exportación: el diseño siempre se dibuja a su tamaño base y se
+// escala, así que el 4K sale nítido (no es un estirado).
+const QUALITIES = [
+  { id: "hd", label: "HD · 1080p", scale: 1 },
+  { id: "2k", label: "2K · 1440p", scale: 4 / 3 },
+  { id: "4k", label: "4K · 2160p", scale: 2 },
+] as const;
+
 // Exporta el MP4 directamente en el navegador (sin servidor).
 export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () => void }> = ({ design, name, onClose }) => {
   const [state, setState] = useState<"idle" | "checking" | "rendering" | "done" | "error">("idle");
@@ -11,7 +19,11 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
   const abort = useRef<AbortController | null>(null);
-  const { width, height } = FORMAT_SIZE[design.format];
+  const [quality, setQuality] = useState<(typeof QUALITIES)[number]["id"]>("4k");
+  const scale = QUALITIES.find((q) => q.id === quality)!.scale;
+  const { width: baseW, height: baseH } = FORMAT_SIZE[design.format];
+  const width = Math.round(baseW * scale / 2) * 2;
+  const height = Math.round(baseH * scale / 2) * 2;
   const frames = totalFrames(design);
   const fileName = `${name.trim().replace(/[^\wÀ-ſ -]+/g, "").replace(/\s+/g, "-") || "bitaxus"}.mp4`;
 
@@ -23,8 +35,8 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
   const composition = {
     component: DesignVideo,
     id: "diseno",
-    width,
-    height,
+    width: baseW,
+    height: baseH,
     fps: FPS,
     durationInFrames: frames,
     defaultProps: { design },
@@ -34,7 +46,7 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
     setError("");
     setState("checking");
     try {
-      const check = await canRenderMediaOnWeb({ width, height, container: "mp4" });
+      const check = await canRenderMediaOnWeb({ width, height, container: "mp4", videoBitrate: "very-high" });
       if (!check.canRender) {
         setState("error");
         setError(
@@ -48,6 +60,8 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
         composition,
         inputProps: { design },
         container: "mp4",
+        scale,
+        videoBitrate: "very-high",
         signal: abort.current.signal,
         onProgress: (p) => setProgress(p.progress),
       });
@@ -66,8 +80,15 @@ export const ExportDialog: React.FC<{ design: Design; name: string; onClose: () 
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2 className="display">Exportar video</h2>
         <p className="muted" style={{ margin: 0 }}>
-          MP4 · {width}×{height} · {(frames / FPS).toFixed(1)} s. Se genera aquí mismo en tu navegador. Deja esta pestaña abierta y a la vista mientras tanto: si cambias de pestaña o minimizas, el navegador lo pausa.
+          MP4 · {width}×{height} · {(frames / FPS).toFixed(1)} s. Se genera aquí mismo en tu navegador. El 4K tarda más y usa más memoria; si falla, prueba con 2K. Deja esta pestaña abierta y a la vista mientras tanto: si cambias de pestaña o minimizas, el navegador lo pausa.
         </p>
+        <div style={{ display: "flex", gap: 6 }}>
+          {QUALITIES.map((q) => (
+            <button key={q.id} className={`chip ${quality === q.id ? "on" : ""}`} disabled={state === "rendering" || state === "checking"} onClick={() => { setQuality(q.id); setState("idle"); setUrl(null); }}>
+              {q.label}
+            </button>
+          ))}
+        </div>
         {(state === "rendering" || state === "checking") && (
           <>
             <div className="progress">
