@@ -94,6 +94,7 @@ const ElementBody: React.FC<{ el: ElementData; localFrame: number }> = ({ el, lo
 const textStyle = (p: TextProps): React.CSSProperties => ({
   fontFamily: fontFamily(p.font),
   fontWeight: p.weight,
+  fontStyle: p.italic ? "italic" : "normal",
   fontSize: p.size,
   color: p.color,
   textAlign: p.align,
@@ -172,6 +173,7 @@ const PillBody: React.FC<{ el: Extract<ElementData, { type: "pill" }>; localFram
         style={{
           fontFamily: fontFamily(p.font),
           fontWeight: 700,
+          fontStyle: p.italic ? "italic" : "normal",
           fontSize: p.size,
           color: colors.white,
           whiteSpace: "nowrap",

@@ -82,6 +82,7 @@ export type TextProps = {
   // Posición vertical del texto dentro de su caja y ajuste fino en px (opcionales).
   valign?: "top" | "middle" | "bottom";
   offsetY?: number;
+  italic?: boolean;
 };
 
 export type ChatMessageData = { from: "cliente" | "bitaxus"; text: string; time: string };
@@ -113,7 +114,7 @@ export type ElementData =
   | (ElementBase & { type: "vector"; props: VectorProps })
   | (ElementBase & {
       type: "pill";
-      props: { text: string; size: number; font: "display" | "body"; glow: boolean; shine: boolean; valign?: "top" | "middle" | "bottom"; offsetY?: number };
+      props: { text: string; size: number; font: "display" | "body"; glow: boolean; shine: boolean; valign?: "top" | "middle" | "bottom"; offsetY?: number; italic?: boolean };
     })
   | (ElementBase & {
       type: "card";

@@ -30,6 +30,7 @@ export const InlineText: React.FC<{
     ? {
         fontFamily: p.font === "display" ? fonts.display : fonts.body,
         fontWeight: el.type === "text" ? el.props.weight : 700,
+        fontStyle: el.props.italic ? "italic" : "normal",
         fontSize: p.size * scale,
         lineHeight: el.type === "text" ? el.props.lineHeight : 1.2,
         letterSpacing: el.type === "text" ? `${el.props.letterSpacing}em` : undefined,
@@ -40,6 +41,7 @@ export const InlineText: React.FC<{
     : {
         fontFamily: p.font === "display" ? fonts.display : fonts.body,
         fontWeight: 700,
+        fontStyle: el.props.italic ? "italic" : "normal",
         fontSize: p.size * scale,
         lineHeight: `${el.h * scale}px`,
         textAlign: "center",

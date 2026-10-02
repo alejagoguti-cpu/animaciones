@@ -378,6 +378,14 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
       } else if (mod && e.key.toLowerCase() === "y") {
         e.preventDefault();
         redo();
+      } else if (mod && e.key.toLowerCase() === "i") {
+        // Cursiva para los textos y botones seleccionados.
+        const targets = selectedEls.filter((x) => x.type === "text" || x.type === "pill");
+        if (targets.length) {
+          e.preventDefault();
+          const next = !targets.every((x) => (x.props as { italic?: boolean }).italic);
+          commit((d) => targets.reduce((acc, x) => updateElement(acc, safeIdx, x.id, (el) => ({ ...el, props: { ...(el.props as object), italic: next } }) as ElementData), d));
+        }
       } else if (mod && e.key.toLowerCase() === "s") {
         e.preventDefault(); // se guarda solo
       } else if (mod && (e.key === "]" || e.key === "[")) {

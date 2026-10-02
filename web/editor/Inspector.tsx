@@ -189,6 +189,7 @@ const TypeFields: React.FC<{
           </div>
           <ColorField label="Color" value={p.color} onChange={(v) => setProp("color", v)} />
           <Check label="MAYÚSCULAS" value={p.uppercase} onChange={(v) => setProp("uppercase", v)} />
+          <Check label="Cursiva (itálica) · Ctrl+I" value={!!p.italic} onChange={(v) => setProp("italic", v)} />
           <Check label="Brillo del color de acento" value={p.glow} onChange={(v) => setProp("glow", v)} />
         </Section>
       );
@@ -230,6 +231,7 @@ const TypeFields: React.FC<{
             <SelectField label="Posición vertical" value={el.props.valign ?? "middle"} options={[["top", "Arriba"], ["middle", "Centro"], ["bottom", "Abajo"]]} onChange={(v) => setProp("valign", v)} />
             <NumberField label="Subir / bajar (px)" value={el.props.offsetY ?? 0} step={2} onChange={(v) => setProp("offsetY", v)} />
           </div>
+          <Check label="Cursiva (itálica) · Ctrl+I" value={!!el.props.italic} onChange={(v) => setProp("italic", v)} />
           <Check label="Resplandor" value={el.props.glow} onChange={(v) => setProp("glow", v)} />
           <Check label="Destello" value={el.props.shine} onChange={(v) => setProp("shine", v)} />
         </Section>
