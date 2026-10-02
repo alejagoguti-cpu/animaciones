@@ -193,7 +193,7 @@ input[type="range"] { width: 100%; accent-color: var(--red); }
 .overlay { position: absolute; inset: 0; }
 .el-box { position: absolute; cursor: move; }
 .el-box:hover { outline: 1px solid rgba(255,255,255,0.45); }
-.el-box.hidden-now { outline: 1px dashed rgba(255,255,255,0.15); }
+.el-box.hidden-now { outline: none; }
 .el-box.selected { outline: 2px solid var(--red-2); }
 .el-box.locked { cursor: default; }
 .handle { position: absolute; width: 11px; height: 11px; background: #fff; border: 2px solid var(--red-2); border-radius: 50%; }
