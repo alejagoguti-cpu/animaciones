@@ -223,6 +223,7 @@ export const Stage: React.FC<Props> = (p) => {
               return (
                 <div
                   key={el.id}
+                  data-el={el.id}
                   className={`el-box ${selected ? "selected" : ""} ${visible ? "" : "hidden-now"} ${el.locked ? "locked" : ""}`}
                   style={{
                     left: el.x * scale,

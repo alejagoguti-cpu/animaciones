@@ -49,6 +49,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const [pickingBg, setPickingBg] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [toast, setToast] = useState("");
+  const [menu, setMenu] = useState<{ x: number; y: number; id: string | null } | null>(null);
   const [penActive, setPenActive] = useState(false);
   const [editingPointsId, setEditingPointsId] = useState<string | null>(null);
   const [inlineId, setInlineId] = useState<string | null>(null);
@@ -416,10 +417,88 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     };
   });
 
+  // Menú de clic derecho sobre el lienzo.
+  useEffect(() => {
+    const on = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (t.closest("input, textarea, select, [contenteditable]")) return;
+      if (!t.closest(".stage-wrap")) return;
+      e.preventDefault();
+      const id = t.closest<HTMLElement>("[data-el]")?.dataset.el ?? null;
+      setSelectedId(id);
+      setMenu({ x: Math.min(e.clientX, window.innerWidth - 200), y: Math.min(e.clientY, window.innerHeight - 330), id });
+    };
+    const close = () => setMenu(null);
+    const key = (e: KeyboardEvent) => e.key === "Escape" && setMenu(null);
+    document.addEventListener("contextmenu", on);
+    window.addEventListener("pointerdown", close);
+    window.addEventListener("resize", close);
+    window.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("contextmenu", on);
+      window.removeEventListener("pointerdown", close);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("keydown", key);
+    };
+  }, []);
+
+  const menuCopy = async (cut: boolean) => {
+    if (!selected) return;
+    try {
+      await navigator.clipboard.writeText(CLIP_TAG + JSON.stringify(selected));
+      if (cut) removeSelected();
+    } catch {
+      setToast("El navegador no dejó copiar. Usa Ctrl+C.");
+      window.setTimeout(() => setToast(""), 3000);
+    }
+  };
+
+  const menuPaste = async () => {
+    try {
+      for (const item of await navigator.clipboard.read()) {
+        const type = item.types.find((t) => t.startsWith("image/"));
+        if (type) return pasteImage(new File([await item.getType(type)], "image", { type }));
+      }
+      const raw = await navigator.clipboard.readText();
+      if (raw) pasteText(raw);
+    } catch {
+      setToast("El navegador no dejó pegar desde el menú. Usa Ctrl+V.");
+      window.setTimeout(() => setToast(""), 3000);
+    }
+  };
+
   const total = totalFrames(design);
 
   return (
     <div className="editor">
+      {menu && (
+        <div
+          className="ctx-menu"
+          style={{ left: menu.x, top: menu.y }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          {menu.id && selected && (
+            <>
+              <button onClick={() => { menuCopy(false); setMenu(null); }}>Copiar <kbd>Ctrl+C</kbd></button>
+              <button onClick={() => { menuCopy(true); setMenu(null); }}>Cortar <kbd>Ctrl+X</kbd></button>
+            </>
+          )}
+          <button onClick={() => { menuPaste(); setMenu(null); }}>Pegar <kbd>Ctrl+V</kbd></button>
+          {menu.id && selected && (
+            <>
+              <button onClick={() => { duplicateSelected(); setMenu(null); }}>Duplicar <kbd>Ctrl+D</kbd></button>
+              <hr />
+              <button onClick={() => { moveLayer("top"); setMenu(null); }}>Traer al frente</button>
+              <button onClick={() => { moveLayer("up"); setMenu(null); }}>Subir una capa</button>
+              <button onClick={() => { moveLayer("down"); setMenu(null); }}>Bajar una capa</button>
+              <button onClick={() => { moveLayer("bottom"); setMenu(null); }}>Enviar al fondo</button>
+              <hr />
+              <button className="danger" onClick={() => { removeSelected(); setMenu(null); }}>Eliminar <kbd>Supr</kbd></button>
+            </>
+          )}
+        </div>
+      )}
       {toast && (
         <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 50, background: "#1b1c1c", border: "1px solid #3a3a40", borderRadius: 10, padding: "10px 16px", fontSize: 14 }}>
           {toast}
