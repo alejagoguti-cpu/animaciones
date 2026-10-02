@@ -48,6 +48,8 @@ const TRANSITIONS: [Transition, string][] = [
   ["slide-up", "Deslizar ↑"],
   ["wipe", "Barrido"],
 ];
+import { GLOW_STYLES } from "../../src/editor/render/glowStyles";
+
 const BACKGROUNDS: [BackgroundKind, string][] = [
   ["glow", "Resplandor Bitaxus"],
   ["solid", "Color sólido"],
@@ -350,6 +352,12 @@ export const SceneInspector: React.FC<SceneProps> = ({ design, scene, onScene, o
 
       <Section title="Fondo">
         <SelectField label="Tipo" value={bg.kind} options={BACKGROUNDS} onChange={(v) => setBg({ kind: v })} />
+        {bg.kind === "glow" && (
+          <>
+            <SelectField label="Estilo del resplandor" value={bg.glowStyle ?? "orbes"} options={GLOW_STYLES} onChange={(v) => setBg({ glowStyle: v })} />
+            <NumberField label="Intensidad (1 = normal)" value={bg.glowIntensity ?? 1} step={0.1} min={0.2} max={1.4} onChange={(v) => setBg({ glowIntensity: v })} />
+          </>
+        )}
         {bg.kind !== "image" && (
           <ColorField label={bg.kind === "glow" ? "Color del resplandor" : "Color"} value={bg.color} onChange={(v) => setBg({ color: v })} />
         )}

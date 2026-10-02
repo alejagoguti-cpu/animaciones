@@ -31,12 +31,17 @@ export type Transition = "none" | "fade" | "slide-left" | "slide-up" | "wipe";
 
 export type BackgroundKind = "glow" | "solid" | "gradient" | "image";
 
+export type GlowStyle = "orbes" | "aurora" | "malla" | "esquina" | "centro" | "arriba" | "abajo" | "lateral" | "ondas" | "rayos";
+
 export type Background = {
   kind: BackgroundKind;
   color: string;
   color2: string;
   image?: string;
   dots: boolean;
+  // Solo para el tipo "glow": forma del resplandor (por defecto, orbes) e intensidad (1 = normal).
+  glowStyle?: GlowStyle;
+  glowIntensity?: number;
 };
 
 type ElementBase = {
