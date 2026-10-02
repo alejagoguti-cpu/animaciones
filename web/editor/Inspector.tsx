@@ -1,4 +1,5 @@
 import React from "react";
+import { uid } from "../../src/editor/factory";
 import {
   BackgroundKind,
   Design,
@@ -7,6 +8,7 @@ import {
   ExitKind,
   Format,
   FORMAT_SIZE,
+  GlowLight,
   LoopKind,
   Scene,
   Transition,
@@ -362,6 +364,29 @@ export const SceneInspector: React.FC<SceneProps> = ({ design, scene, onScene, o
           <>
             <p className="muted" style={{ margin: 0 }}>Arrastra los puntos blancos del lienzo para mover la luz (con la escena sin nada seleccionado).</p>
             {bg.glowPoints && <button className="btn small" onClick={() => setBg({ glowPoints: undefined })}>Restablecer posición</button>}
+            <button
+              className="btn small"
+              onClick={() =>
+                setBg({
+                  glowLights: [...(bg.glowLights ?? []), { id: uid(), x: 0.3 + Math.random() * 0.4, y: 0.3 + Math.random() * 0.4, size: 0.5, color: bg.color }],
+                })
+              }
+            >
+              + Agregar luz
+            </button>
+            {(bg.glowLights ?? []).map((l, i) => {
+              const setLight = (patch: Partial<GlowLight>) =>
+                setBg({ glowLights: (bg.glowLights ?? []).map((x) => (x.id === l.id ? { ...x, ...patch } : x)) });
+              return (
+                <div key={l.id} className="row" style={{ alignItems: "flex-end" }}>
+                  <ColorField label={`Luz ${i + 1}`} value={l.color} onChange={(v) => setLight({ color: v })} />
+                  <NumberField label="Tamaño" value={l.size} step={0.1} min={0.1} max={2} onChange={(v) => setLight({ size: v })} />
+                  <button className="btn small" onClick={() => setBg({ glowLights: (bg.glowLights ?? []).filter((x) => x.id !== l.id) })}>
+                    Quitar
+                  </button>
+                </div>
+              );
+            })}
           </>
         )}
         {bg.kind !== "image" && (

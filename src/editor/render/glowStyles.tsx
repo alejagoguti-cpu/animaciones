@@ -1,5 +1,5 @@
 import React from "react";
-import { GlowStyle } from "../types";
+import { GlowLight, GlowStyle } from "../types";
 
 // Estilos de resplandor del fondo. Todo es SVG con degradados radiales y lineales
 // (sin filtros) para que el MP4 exportado en el navegador salga igual que en pantalla.
@@ -199,6 +199,47 @@ export const GlowStyleLayer: React.FC<{
     <>
       <defs>{defs}</defs>
       {shapes}
+    </>
+  );
+};
+
+// Luces extra agregadas por el usuario: manchas redondas con su propio color y tamaño.
+export const GlowLights: React.FC<{
+  lights: GlowLight[];
+  id: string;
+  width: number;
+  height: number;
+  t: number;
+  intensity: number;
+}> = ({ lights, id, width: w, height: h, t, intensity }) => {
+  const m = Math.max(w, h);
+  return (
+    <>
+      <defs>
+        {lights.map((l, i) => {
+          const dx = Math.sin(t * 0.5 + i * 1.7) * w * 0.02;
+          const dy = Math.cos(t * 0.4 + i * 2.3) * h * 0.015;
+          const a = Math.min(1, 0.7 * intensity);
+          return (
+            <radialGradient
+              key={l.id}
+              id={`${id}l${i}`}
+              gradientUnits="userSpaceOnUse"
+              cx={0}
+              cy={0}
+              r={1}
+              gradientTransform={`translate(${l.x * w + dx} ${l.y * h + dy}) scale(${l.size * m})`}
+            >
+              <stop offset="0" stopColor={l.color} stopOpacity={a} />
+              <stop offset="0.45" stopColor={l.color} stopOpacity={a * 0.3} />
+              <stop offset="1" stopColor={l.color} stopOpacity={0} />
+            </radialGradient>
+          );
+        })}
+      </defs>
+      {lights.map((l, i) => (
+        <rect key={l.id} width={w} height={h} fill={`url(#${id}l${i})`} />
+      ))}
     </>
   );
 };

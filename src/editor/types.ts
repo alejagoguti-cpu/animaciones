@@ -33,6 +33,8 @@ export type BackgroundKind = "glow" | "solid" | "gradient" | "image";
 
 export type GlowStyle = "orbes" | "aurora" | "malla" | "esquina" | "centro" | "arriba" | "abajo" | "lateral" | "ondas" | "rayos";
 
+export type GlowLight = { id: string; x: number; y: number; size: number; color: string };
+
 export type Background = {
   kind: BackgroundKind;
   color: string;
@@ -44,6 +46,8 @@ export type Background = {
   glowIntensity?: number;
   // Posición (0–1 del lienzo) de cada fuente de luz; si falta, la del estilo. Se arrastran en el lienzo.
   glowPoints?: { x: number; y: number }[];
+  // Luces extra que agrega el usuario: posición (0–1), tamaño (1 = el lado mayor del lienzo) y color.
+  glowLights?: GlowLight[];
 };
 
 type ElementBase = {

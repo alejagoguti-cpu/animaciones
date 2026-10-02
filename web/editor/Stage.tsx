@@ -42,6 +42,7 @@ type Drag =
   | { kind: "resize"; id: string; dir: string; startX: number; startY: number; orig: ElementData }
   | { kind: "rotate"; id: string; cx: number; cy: number; orig: ElementData }
   | { kind: "glow"; index: number }
+  | { kind: "glowlight"; id: string }
   | { kind: "gresize"; dir: string; startX: number; startY: number; box: Box; group: ElementData[] };
 
 type Box = { x: number; y: number; w: number; h: number };
@@ -154,6 +155,18 @@ export const Stage: React.FC<Props> = (p) => {
   const onPointerMove = (e: React.PointerEvent) => {
     const d = drag.current;
     if (!d) return;
+    if (d.kind === "glowlight") {
+      const r = innerRef.current!.getBoundingClientRect();
+      const x = Math.round(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * 1000) / 1000;
+      const y = Math.round(Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)) * 1000) / 1000;
+      p.preview((des) =>
+        updateScene(des, p.sceneIdx, (s) => ({
+          ...s,
+          background: { ...s.background, glowLights: (s.background.glowLights ?? []).map((l) => (l.id === d.id ? { ...l, x, y } : l)) },
+        })),
+      );
+      return;
+    }
     if (d.kind === "glow") {
       const r = innerRef.current!.getBoundingClientRect();
       const x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
@@ -454,6 +467,35 @@ export const Stage: React.FC<Props> = (p) => {
                       // el arrastre sigue por burbujeo
                     }
                     drag.current = { kind: "glow", index: i };
+                  }}
+                />
+              ))}
+            {scene.background.kind === "glow" && p.selectedIds.length === 0 && !p.penActive &&
+              (scene.background.glowLights ?? []).map((l) => (
+                <div
+                  key={l.id}
+                  className="glow-handle extra"
+                  title="Arrastra para mover · doble clic para quitar esta luz"
+                  style={{ left: l.x * W * scale, top: l.y * H * scale, borderColor: l.color }}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    try {
+                      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                    } catch {
+                      // el arrastre sigue por burbujeo
+                    }
+                    drag.current = { kind: "glowlight", id: l.id };
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    drag.current = null;
+                    p.preview((des) =>
+                      updateScene(des, p.sceneIdx, (s) => ({
+                        ...s,
+                        background: { ...s.background, glowLights: (s.background.glowLights ?? []).filter((x) => x.id !== l.id) },
+                      })),
+                    );
+                    p.endPreview();
                   }}
                 />
               ))}

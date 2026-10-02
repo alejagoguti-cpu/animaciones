@@ -7,7 +7,7 @@ import { wipe } from "@remotion/transitions/wipe";
 import { AccentProvider } from "../../accent";
 import { getTransitionFrames, sceneFrames } from "../timing";
 import { Background, Design, Scene, Transition } from "../types";
-import { anchorsOf, GlowStyleLayer } from "./glowStyles";
+import { anchorsOf, GlowLights, GlowStyleLayer } from "./glowStyles";
 import { ElementView, resolveSrc } from "./ElementView";
 
 export type DesignVideoProps = { design: Design };
@@ -135,6 +135,9 @@ const SceneBackground: React.FC<{ bg: Background }> = ({ bg }) => {
           )}
           {bg.kind === "glow" && (bg.glowStyle ?? "orbes") !== "orbes" && (
             <GlowStyleLayer style={bg.glowStyle!} id={gid} width={width} height={height} t={t} color={bg.color} intensity={bg.glowIntensity ?? 1} points={bg.glowPoints} />
+          )}
+          {bg.kind === "glow" && bg.glowLights && bg.glowLights.length > 0 && (
+            <GlowLights lights={bg.glowLights} id={gid} width={width} height={height} t={t} intensity={bg.glowIntensity ?? 1} />
           )}
           {bg.dots && <rect width={width} height={height} fill={`url(#${gid}p)`} mask={`url(#${gid}k)`} />}
           {bg.kind === "glow" && <rect width={width} height={height} fill={`url(#${gid}v)`} />}
