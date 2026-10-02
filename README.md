@@ -23,7 +23,7 @@ Código en `web/` (la app) y `src/editor/` (formato de los diseños y cómo se d
 - **Escenas:** varias escenas con transición y duración propias; formatos 9:16, 4:5, 1:1 y 16:9.
 - **Exportar:** el MP4 se genera en el navegador (Chrome o Edge).
 - **Assets de marca:** `public/assets/` con su lista en `public/assets/manifest.json`.
-- **Atajos:** Ctrl+Z / Ctrl+Y, Ctrl+D duplicar, Supr eliminar, flechas mover (Shift = 10 px), Espacio reproducir.
+- **Atajos:** Ctrl+Z / Ctrl+Y deshacer y rehacer, Ctrl+C / Ctrl+X / Ctrl+V copiar, cortar y pegar (también entre escenas y diseños), Ctrl+D duplicar, Supr eliminar, Ctrl+] / Ctrl+[ subir y bajar capa (con Shift, al frente o al fondo), Tab y Shift+Tab cambiar de elemento, Inicio / Fin ir al principio o final de la escena, flechas mover (Shift = 10 px), Espacio reproducir.
 - **Modo prueba sin guardar:** `#/demo` al final de la dirección.
 
 ## Uso

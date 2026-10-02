@@ -29,6 +29,9 @@ const SAVE_LABEL: Record<SaveState, string> = {
   error: "⚠ No se pudo guardar",
 };
 
+// Portapapeles interno del editor: sirve entre escenas y entre diseños.
+let clipboard: ElementData | null = null;
+
 const fmt = (frames: number) => `${(frames / FPS).toFixed(1)}s`;
 
 export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, saveState, onRetrySave }) => {
@@ -120,6 +123,30 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const duplicateSelected = () => {
     if (!selected) return;
     const copy = { ...structuredClone(selected), id: uid(), x: selected.x + 40, y: selected.y + 40, name: `${selected.name ?? selected.type} (copia)` };
+    setScene((s) => ({ ...s, elements: [...s.elements, copy] }));
+    setSelectedId(copy.id);
+  };
+
+  const copySelected = () => {
+    if (!selected) return false;
+    clipboard = structuredClone(selected);
+    return true;
+  };
+
+  const pasteClipboard = () => {
+    if (!clipboard) return;
+    const src = clipboard;
+    const n = (src as { pasteCount?: number }).pasteCount ?? 0;
+    (clipboard as { pasteCount?: number }).pasteCount = n + 1;
+    const copy = {
+      ...structuredClone(src),
+      id: uid(),
+      x: src.x + 40 * (n + 1),
+      y: src.y + 40 * (n + 1),
+      start: Math.min(src.start, Math.max(0, scene.duration - 0.2)),
+      end: Math.min(src.end, scene.duration),
+    } as ElementData;
+    delete (copy as { pasteCount?: number }).pasteCount;
     setScene((s) => ({ ...s, elements: [...s.elements, copy] }));
     setSelectedId(copy.id);
   };
@@ -272,6 +299,31 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
       } else if (mod && e.key.toLowerCase() === "y") {
         e.preventDefault();
         redo();
+      } else if (mod && e.key.toLowerCase() === "c") {
+        if (copySelected()) e.preventDefault();
+      } else if (mod && e.key.toLowerCase() === "x") {
+        if (copySelected()) {
+          e.preventDefault();
+          removeSelected();
+        }
+      } else if (mod && e.key.toLowerCase() === "v") {
+        if (clipboard) {
+          e.preventDefault();
+          pasteClipboard();
+        }
+      } else if (mod && e.key.toLowerCase() === "s") {
+        e.preventDefault(); // se guarda solo
+      } else if (mod && (e.key === "]" || e.key === "[")) {
+        e.preventDefault();
+        moveLayer(e.key === "]" ? (e.shiftKey ? "top" : "up") : e.shiftKey ? "bottom" : "down");
+      } else if (e.key === "Home" || e.key === "End") {
+        e.preventDefault();
+        seekScene(e.key === "Home" ? 0 : sceneLen - 1);
+      } else if (e.key === "Tab" && t === document.body && scene.elements.length) {
+        e.preventDefault();
+        const list = scene.elements;
+        const i = list.findIndex((x) => x.id === selectedId);
+        setSelectedId(list[(i + (e.shiftKey ? -1 : 1) + list.length) % list.length].id);
       } else if (mod && e.key.toLowerCase() === "d") {
         e.preventDefault();
         duplicateSelected();
