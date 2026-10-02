@@ -7,6 +7,7 @@ import { Design, ElementData, ElementType, Format, FORMAT_SIZE, FPS, VectorNode 
 import { DesignPreview } from "../DesignList";
 import { go, LOGO } from "../App";
 import type { SaveState } from "../EditorPage";
+import { publicUrl, supabase, UPLOADS_BUCKET } from "../supabase";
 import { updateElement, updateScene, useDesignStore } from "../store";
 import { ExportDialog } from "./ExportDialog";
 import { ElementInspector, SceneInspector } from "./Inspector";
@@ -47,6 +48,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const [showTimeline, setShowTimeline] = useState(true);
   const [pickingBg, setPickingBg] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [toast, setToast] = useState("");
   const [penActive, setPenActive] = useState(false);
   const [editingPointsId, setEditingPointsId] = useState<string | null>(null);
   const [inlineId, setInlineId] = useState<string | null>(null);
@@ -139,6 +141,36 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     } as ElementData;
     setScene((s) => ({ ...s, elements: [...s.elements, copy] }));
     setSelectedId(copy.id);
+  };
+
+  // Imagen del portapapeles (captura, copiada de una web, etc.): se sube a la nube y se agrega.
+  const pasteImage = async (file: File) => {
+    setToast("Subiendo imagen…");
+    try {
+      const url = URL.createObjectURL(file);
+      const { w, h } = await new Promise<{ w: number; h: number }>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = () => resolve({ w: 800, h: 800 });
+        img.src = url;
+      });
+      URL.revokeObjectURL(url);
+      const ext = file.type === "image/jpeg" ? ".jpg" : file.type === "image/webp" ? ".webp" : file.type === "image/gif" ? ".gif" : ".png";
+      const path = `files/${Date.now()}-pegada__${w}x${h}__${ext}`;
+      const { error } = await supabase.storage.from(UPLOADS_BUCKET).upload(path, file, { contentType: file.type || "image/png" });
+      if (error) throw error;
+      const src = publicUrl(path);
+      if (pickingBg) {
+        setScene((s) => ({ ...s, background: { ...s.background, kind: "image", image: src } }));
+        setPickingBg(false);
+      } else {
+        addElement("image", { src, width: w, height: h });
+      }
+      setToast("");
+    } catch (e) {
+      setToast(`No se pudo pegar la imagen: ${e instanceof Error ? e.message : String(e)}`);
+      window.setTimeout(() => setToast(""), 4000);
+    }
   };
 
   const pasteText = (raw: string) => {
@@ -363,6 +395,12 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     const cut = (e: ClipboardEvent) => onCopy(e, true);
     const paste = (e: ClipboardEvent) => {
       if (editable(e.target)) return;
+      const img = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith("image/"));
+      if (img) {
+        e.preventDefault();
+        pasteImage(img);
+        return;
+      }
       const raw = e.clipboardData?.getData("text/plain") ?? "";
       if (!raw) return;
       e.preventDefault();
@@ -382,6 +420,11 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
 
   return (
     <div className="editor">
+      {toast && (
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 50, background: "#1b1c1c", border: "1px solid #3a3a40", borderRadius: 10, padding: "10px 16px", fontSize: 14 }}>
+          {toast}
+        </div>
+      )}
       <header className="topbar">
         <button className="icon-btn" onClick={() => go("/")} title="Mis diseños">
           ←
