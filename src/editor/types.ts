@@ -83,6 +83,7 @@ export type TextProps = {
   valign?: "top" | "middle" | "bottom";
   offsetY?: number;
   italic?: boolean;
+  underline?: boolean;
 };
 
 export type ChatMessageData = { from: "cliente" | "bitaxus"; text: string; time: string };
@@ -114,7 +115,7 @@ export type ElementData =
   | (ElementBase & { type: "vector"; props: VectorProps })
   | (ElementBase & {
       type: "pill";
-      props: { text: string; size: number; font: "display" | "body"; glow: boolean; shine: boolean; valign?: "top" | "middle" | "bottom"; offsetY?: number; italic?: boolean };
+      props: { text: string; size: number; font: "display" | "body"; glow: boolean; shine: boolean; valign?: "top" | "middle" | "bottom"; offsetY?: number; italic?: boolean; underline?: boolean };
     })
   | (ElementBase & {
       type: "card";

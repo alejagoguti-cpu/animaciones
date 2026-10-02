@@ -378,6 +378,22 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
       } else if (mod && e.key.toLowerCase() === "y") {
         e.preventDefault();
         redo();
+      } else if (mod && (e.key.toLowerCase() === "u" || e.key.toLowerCase() === "b")) {
+        // Subrayado (Ctrl+U) y negrita (Ctrl+B) para los textos seleccionados.
+        const bold = e.key.toLowerCase() === "b";
+        const targets = selectedEls.filter((x) => x.type === "text" || (!bold && x.type === "pill"));
+        if (targets.length) {
+          e.preventDefault();
+          const on = (x: ElementData) => (bold ? ((x.props as { weight?: number }).weight ?? 400) >= 700 : !!(x.props as { underline?: boolean }).underline);
+          const next = !targets.every(on);
+          commit((d) =>
+            targets.reduce(
+              (acc, x) =>
+                updateElement(acc, safeIdx, x.id, (el) => ({ ...el, props: { ...(el.props as object), ...(bold ? { weight: next ? 700 : 400 } : { underline: next }) } }) as ElementData),
+              d,
+            ),
+          );
+        }
       } else if (mod && e.key.toLowerCase() === "i") {
         // Cursiva para los textos y botones seleccionados.
         const targets = selectedEls.filter((x) => x.type === "text" || x.type === "pill");

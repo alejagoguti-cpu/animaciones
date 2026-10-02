@@ -189,7 +189,9 @@ const TypeFields: React.FC<{
           </div>
           <ColorField label="Color" value={p.color} onChange={(v) => setProp("color", v)} />
           <Check label="MAYÚSCULAS" value={p.uppercase} onChange={(v) => setProp("uppercase", v)} />
+          <Check label="Negrita · Ctrl+B" value={p.weight >= 700} onChange={(v) => setProp("weight", v ? 700 : 400)} />
           <Check label="Cursiva (itálica) · Ctrl+I" value={!!p.italic} onChange={(v) => setProp("italic", v)} />
+          <Check label="Subrayado · Ctrl+U" value={!!p.underline} onChange={(v) => setProp("underline", v)} />
           <Check label="Brillo del color de acento" value={p.glow} onChange={(v) => setProp("glow", v)} />
         </Section>
       );
@@ -232,6 +234,7 @@ const TypeFields: React.FC<{
             <NumberField label="Subir / bajar (px)" value={el.props.offsetY ?? 0} step={2} onChange={(v) => setProp("offsetY", v)} />
           </div>
           <Check label="Cursiva (itálica) · Ctrl+I" value={!!el.props.italic} onChange={(v) => setProp("italic", v)} />
+          <Check label="Subrayado · Ctrl+U" value={!!el.props.underline} onChange={(v) => setProp("underline", v)} />
           <Check label="Resplandor" value={el.props.glow} onChange={(v) => setProp("glow", v)} />
           <Check label="Destello" value={el.props.shine} onChange={(v) => setProp("shine", v)} />
         </Section>
