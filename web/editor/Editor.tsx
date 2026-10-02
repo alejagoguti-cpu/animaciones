@@ -29,8 +29,9 @@ const SAVE_LABEL: Record<SaveState, string> = {
   error: "⚠ No se pudo guardar",
 };
 
-// Portapapeles interno del editor: sirve entre escenas y entre diseños.
-let clipboard: ElementData | null = null;
+// Los elementos copiados viajan por el portapapeles del sistema como texto con
+// esta marca, así se pueden pegar en otra pestaña, otro diseño u otra ventana.
+const CLIP_TAG = "bitaxus-elemento:";
 
 const fmt = (frames: number) => `${(frames / FPS).toFixed(1)}s`;
 
@@ -127,28 +128,38 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     setSelectedId(copy.id);
   };
 
-  const copySelected = () => {
-    if (!selected) return false;
-    clipboard = structuredClone(selected);
-    return true;
-  };
-
-  const pasteClipboard = () => {
-    if (!clipboard) return;
-    const src = clipboard;
-    const n = (src as { pasteCount?: number }).pasteCount ?? 0;
-    (clipboard as { pasteCount?: number }).pasteCount = n + 1;
+  const pasteElement = (src: ElementData, n: number) => {
     const copy = {
       ...structuredClone(src),
       id: uid(),
-      x: src.x + 40 * (n + 1),
-      y: src.y + 40 * (n + 1),
+      x: src.x + 40 * n,
+      y: src.y + 40 * n,
       start: Math.min(src.start, Math.max(0, scene.duration - 0.2)),
       end: Math.min(src.end, scene.duration),
     } as ElementData;
-    delete (copy as { pasteCount?: number }).pasteCount;
     setScene((s) => ({ ...s, elements: [...s.elements, copy] }));
     setSelectedId(copy.id);
+  };
+
+  const pasteText = (raw: string) => {
+    if (raw.startsWith(CLIP_TAG)) {
+      try {
+        const src = JSON.parse(raw.slice(CLIP_TAG.length)) as ElementData;
+        if (src && typeof src === "object" && "type" in src) {
+          // Si se pega varias veces en el mismo lugar, cada copia se desplaza un poco más.
+          const same = scene.elements.filter((e) => e.type === src.type && e.x >= src.x && e.y >= src.y && e.x - src.x === e.y - src.y).length;
+          return pasteElement(src, Math.min(same + 1, 8));
+        }
+      } catch {
+        /* no era un elemento: se trata como texto */
+      }
+    }
+    const text = raw.trim();
+    if (!text) return;
+    const el = newElement("text", design.format, scene.duration, { textKind: "subtitulo" });
+    if (el.type === "text") el.props.text = text.slice(0, 400);
+    setScene((s) => ({ ...s, elements: [...s.elements, el] }));
+    setSelectedId(el.id);
   };
 
   const moveLayer = (dir: "up" | "down" | "top" | "bottom") => {
@@ -299,18 +310,6 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
       } else if (mod && e.key.toLowerCase() === "y") {
         e.preventDefault();
         redo();
-      } else if (mod && e.key.toLowerCase() === "c") {
-        if (copySelected()) e.preventDefault();
-      } else if (mod && e.key.toLowerCase() === "x") {
-        if (copySelected()) {
-          e.preventDefault();
-          removeSelected();
-        }
-      } else if (mod && e.key.toLowerCase() === "v") {
-        if (clipboard) {
-          e.preventDefault();
-          pasteClipboard();
-        }
       } else if (mod && e.key.toLowerCase() === "s") {
         e.preventDefault(); // se guarda solo
       } else if (mod && (e.key === "]" || e.key === "[")) {
@@ -349,6 +348,34 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     };
     window.addEventListener("keydown", on);
     return () => window.removeEventListener("keydown", on);
+  });
+
+  // Copiar, cortar y pegar con el portapapeles del sistema (funciona entre pestañas).
+  useEffect(() => {
+    const editable = (t: EventTarget | null) => !!(t as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable]");
+    const onCopy = (e: ClipboardEvent, cut: boolean) => {
+      if (editable(e.target) || !selected) return;
+      e.clipboardData?.setData("text/plain", CLIP_TAG + JSON.stringify(selected));
+      e.preventDefault();
+      if (cut) removeSelected();
+    };
+    const copy = (e: ClipboardEvent) => onCopy(e, false);
+    const cut = (e: ClipboardEvent) => onCopy(e, true);
+    const paste = (e: ClipboardEvent) => {
+      if (editable(e.target)) return;
+      const raw = e.clipboardData?.getData("text/plain") ?? "";
+      if (!raw) return;
+      e.preventDefault();
+      pasteText(raw);
+    };
+    document.addEventListener("copy", copy);
+    document.addEventListener("cut", cut);
+    document.addEventListener("paste", paste);
+    return () => {
+      document.removeEventListener("copy", copy);
+      document.removeEventListener("cut", cut);
+      document.removeEventListener("paste", paste);
+    };
   });
 
   const total = totalFrames(design);
