@@ -40,7 +40,17 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const { design, commit, preview, endPreview, undo, redo, canUndo, canRedo } = useDesignStore(initialDesign);
   const [name, setName] = useState(initialName);
   const [sceneIdx, setSceneIdx] = useState(0);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedIdRaw] = useState<string | null>(null);
+  // Elementos seleccionados además del principal (selección múltiple).
+  const [extraIds, setExtraIds] = useState<string[]>([]);
+  const setSelectedId = (id: string | null) => {
+    setSelectedIdRaw(id);
+    setExtraIds([]);
+  };
+  const setSelection = (ids: string[]) => {
+    setSelectedIdRaw(ids[0] ?? null);
+    setExtraIds(ids.slice(1));
+  };
   const [globalFrame, setGlobalFrame] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [loopScene, setLoopScene] = useState(true);
@@ -74,6 +84,16 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const sceneLen = frames[safeIdx];
   const sceneFrame = Math.max(0, Math.min(sceneLen - 1, globalFrame - sceneStart));
   const selected = scene.elements.find((e) => e.id === selectedId) ?? null;
+  const selectedEls = scene.elements.filter((e) => e.id === selectedId || extraIds.includes(e.id));
+  const selIds = selectedEls.map((e) => e.id);
+  // Clic en un elemento: con Shift/Ctrl se suma o se quita de la selección.
+  const onSelectEl = (id: string | null, additive = false) => {
+    if (id === null) return setSelectedId(null);
+    if (additive) return setSelection(selIds.includes(id) ? selIds.filter((x) => x !== id) : [...selIds, id]);
+    if (selIds.length > 1 && selIds.includes(id)) return; // se mantiene el grupo para moverlo junto
+    setSelectedId(id);
+  };
+  const clipPayload = () => CLIP_TAG + JSON.stringify(selectedEls.length > 1 ? selectedEls : selected);
 
   // Al cambiar de selección se sale de los modos de edición.
   useEffect(() => {
@@ -119,29 +139,32 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   };
 
   const removeSelected = () => {
-    if (!selected) return;
-    setScene((s) => ({ ...s, elements: s.elements.filter((e) => e.id !== selected.id) }));
+    if (!selectedEls.length) return;
+    setScene((s) => ({ ...s, elements: s.elements.filter((e) => !selIds.includes(e.id)) }));
     setSelectedId(null);
   };
 
   const duplicateSelected = () => {
-    if (!selected) return;
-    const copy = { ...structuredClone(selected), id: uid(), x: selected.x + 40, y: selected.y + 40, name: `${selected.name ?? selected.type} (copia)` };
-    setScene((s) => ({ ...s, elements: [...s.elements, copy] }));
-    setSelectedId(copy.id);
+    if (!selectedEls.length) return;
+    const copies = selectedEls.map((el) => ({ ...structuredClone(el), id: uid(), x: el.x + 40, y: el.y + 40, name: `${el.name ?? el.type} (copia)` }));
+    setScene((s) => ({ ...s, elements: [...s.elements, ...copies] }));
+    setSelection(copies.map((c) => c.id));
   };
 
-  const pasteElement = (src: ElementData, n: number) => {
-    const copy = {
-      ...structuredClone(src),
-      id: uid(),
-      x: src.x + 40 * n,
-      y: src.y + 40 * n,
-      start: Math.min(src.start, Math.max(0, scene.duration - 0.2)),
-      end: Math.min(src.end, scene.duration),
-    } as ElementData;
-    setScene((s) => ({ ...s, elements: [...s.elements, copy] }));
-    setSelectedId(copy.id);
+  const pasteElements = (srcs: ElementData[], n: number) => {
+    const copies = srcs.map(
+      (src) =>
+        ({
+          ...structuredClone(src),
+          id: uid(),
+          x: src.x + 40 * n,
+          y: src.y + 40 * n,
+          start: Math.min(src.start, Math.max(0, scene.duration - 0.2)),
+          end: Math.min(src.end, scene.duration),
+        }) as ElementData,
+    );
+    setScene((s) => ({ ...s, elements: [...s.elements, ...copies] }));
+    setSelection(copies.map((c) => c.id));
   };
 
   // Imagen del portapapeles (captura, copiada de una web, etc.): se sube a la nube y se agrega.
@@ -177,11 +200,13 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const pasteText = (raw: string) => {
     if (raw.startsWith(CLIP_TAG)) {
       try {
-        const src = JSON.parse(raw.slice(CLIP_TAG.length)) as ElementData;
-        if (src && typeof src === "object" && "type" in src) {
+        const parsed = JSON.parse(raw.slice(CLIP_TAG.length)) as ElementData | ElementData[];
+        const srcs = (Array.isArray(parsed) ? parsed : [parsed]).filter((x) => x && typeof x === "object" && "type" in x);
+        if (srcs.length) {
           // Si se pega varias veces en el mismo lugar, cada copia se desplaza un poco más.
-          const same = scene.elements.filter((e) => e.type === src.type && e.x >= src.x && e.y >= src.y && e.x - src.x === e.y - src.y).length;
-          return pasteElement(src, Math.min(same + 1, 8));
+          const first = srcs[0];
+          const same = scene.elements.filter((e) => e.type === first.type && e.x >= first.x && e.y >= first.y && e.x - first.x === e.y - first.y).length;
+          return pasteElements(srcs, Math.min(same + 1, 8));
         }
       } catch {
         /* no era un elemento: se trata como texto */
@@ -360,7 +385,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         e.preventDefault();
         duplicateSelected();
       } else if (e.key === "Delete" || e.key === "Backspace") {
-        if (selected) {
+        if (selectedEls.length) {
           e.preventDefault();
           removeSelected();
         }
@@ -371,12 +396,15 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         if (editingPointsId) return setEditingPointsId(null);
         setSelectedId(null);
         setPickingBg(false);
-      } else if (selected && e.key.startsWith("Arrow") && !selected.locked) {
+      } else if (mod && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        setSelection(scene.elements.map((x) => x.id));
+      } else if (selectedEls.length && e.key.startsWith("Arrow")) {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 1;
         const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
         const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
-        setEl(selected.id, (el) => ({ ...el, x: el.x + dx, y: el.y + dy }));
+        commit((d) => selectedEls.filter((x) => !x.locked).reduce((acc, x) => updateElement(acc, safeIdx, x.id, (el) => ({ ...el, x: el.x + dx, y: el.y + dy })), d));
       }
     };
     window.addEventListener("keydown", on);
@@ -388,7 +416,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     const editable = (t: EventTarget | null) => !!(t as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable]");
     const onCopy = (e: ClipboardEvent, cut: boolean) => {
       if (editable(e.target) || !selected) return;
-      e.clipboardData?.setData("text/plain", CLIP_TAG + JSON.stringify(selected));
+      e.clipboardData?.setData("text/plain", clipPayload());
       e.preventDefault();
       if (cut) removeSelected();
     };
@@ -417,6 +445,9 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     };
   });
 
+  const selIdsRef = useRef<string[]>([]);
+  selIdsRef.current = selIds;
+
   // Menú de clic derecho sobre el lienzo.
   useEffect(() => {
     const on = (e: MouseEvent) => {
@@ -425,7 +456,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
       if (!t.closest(".stage-wrap")) return;
       e.preventDefault();
       const id = t.closest<HTMLElement>("[data-el]")?.dataset.el ?? null;
-      setSelectedId(id);
+      if (!(id && selIdsRef.current.includes(id))) setSelectedId(id);
       setMenu({ x: Math.min(e.clientX, window.innerWidth - 200), y: Math.min(e.clientY, window.innerHeight - 330), id });
     };
     const close = () => setMenu(null);
@@ -445,7 +476,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const menuCopy = async (cut: boolean) => {
     if (!selected) return;
     try {
-      await navigator.clipboard.writeText(CLIP_TAG + JSON.stringify(selected));
+      await navigator.clipboard.writeText(clipPayload());
       if (cut) removeSelected();
     } catch {
       setToast("El navegador no dejó copiar. Usa Ctrl+C.");
@@ -554,7 +585,9 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         sceneStart={sceneStart}
         sceneFrame={sceneFrame}
         selectedId={selectedId}
-        onSelect={setSelectedId}
+        selectedIds={selIds}
+        onSelect={onSelectEl}
+        onSelectMany={setSelection}
         preview={preview}
         endPreview={endPreview}
         playerRef={playerRef}

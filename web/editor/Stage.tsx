@@ -15,7 +15,9 @@ type Props = {
   sceneStart: number;
   sceneFrame: number;
   selectedId: string | null;
-  onSelect: (id: string | null) => void;
+  selectedIds: string[];
+  onSelect: (id: string | null, additive?: boolean) => void;
+  onSelectMany: (ids: string[]) => void;
   preview: (fn: (d: Design) => Design) => void;
   endPreview: () => void;
   playerRef: React.RefObject<PlayerRef | null>;
@@ -35,7 +37,7 @@ type Props = {
 };
 
 type Drag =
-  | { kind: "move"; id: string; startX: number; startY: number; orig: ElementData }
+  | { kind: "move"; id: string; startX: number; startY: number; orig: ElementData; group: ElementData[] }
   | { kind: "resize"; id: string; dir: string; startX: number; startY: number; orig: ElementData }
   | { kind: "rotate"; id: string; cx: number; cy: number; orig: ElementData };
 
@@ -48,6 +50,9 @@ export const Stage: React.FC<Props> = (p) => {
   const [scale, setScale] = useState(0.3);
   const drag = useRef<Drag | null>(null);
   const [guides, setGuides] = useState<{ v: number[]; h: number[] }>({ v: [], h: [] });
+  // Selección por recuadro: arrastrar sobre una zona vacía.
+  const marqueeRef = useRef<{ x0: number; y0: number; additive: boolean; moved: boolean } | null>(null);
+  const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
   useLayoutEffect(() => {
     const el = wrapRef.current;
@@ -90,8 +95,9 @@ export const Stage: React.FC<Props> = (p) => {
 
   const onPointerDown = (e: React.PointerEvent, el: ElementData, kind: "move" | "rotate" | string) => {
     e.stopPropagation();
-    p.onSelect(el.id);
-    if (el.locked) return;
+    const additive = kind === "move" && (e.shiftKey || e.ctrlKey || e.metaKey);
+    p.onSelect(el.id, additive);
+    if (additive || el.locked) return;
     // Editando puntos o texto, la caja no se arrastra.
     if (kind === "move" && (p.editingPointsId === el.id || p.inlineId === el.id)) return;
     try {
@@ -100,7 +106,9 @@ export const Stage: React.FC<Props> = (p) => {
       // El puntero ya no está activo; el arrastre sigue por burbujeo.
     }
     if (kind === "move") {
-      drag.current = { kind: "move", id: el.id, startX: e.clientX, startY: e.clientY, orig: el };
+      const inGroup = p.selectedIds.length > 1 && p.selectedIds.includes(el.id);
+      const group = inGroup ? scene.elements.filter((x) => p.selectedIds.includes(x.id) && !x.locked) : [el];
+      drag.current = { kind: "move", id: el.id, startX: e.clientX, startY: e.clientY, orig: el, group };
     } else if (kind === "rotate") {
       const r = innerRef.current!.getBoundingClientRect();
       drag.current = {
@@ -147,7 +155,14 @@ export const Stage: React.FC<Props> = (p) => {
         }
       }
       setGuides({ v, h });
-      p.preview((des) => updateElement(des, p.sceneIdx, d.id, (el) => ({ ...el, x: Math.round(x), y: Math.round(y) })));
+      const dx = x - o.x;
+      const dy = y - o.y;
+      p.preview((des) =>
+        d.group.reduce(
+          (acc, g) => updateElement(acc, p.sceneIdx, g.id, (el) => ({ ...el, x: Math.round(g.x + dx), y: Math.round(g.y + dy) })),
+          des,
+        ),
+      );
     } else if (d.kind === "resize") {
       const dx = (e.clientX - d.startX) / scale;
       const dy = (e.clientY - d.startY) / scale;
@@ -193,8 +208,54 @@ export const Stage: React.FC<Props> = (p) => {
     setGuides({ v: [], h: [] });
   };
 
+  const toDesign = (e: React.PointerEvent) => {
+    const r = innerRef.current!.getBoundingClientRect();
+    return { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale };
+  };
+
+  const onWrapDown = (e: React.PointerEvent) => {
+    if (e.button !== 0 || p.penActive) return;
+    const { x, y } = toDesign(e);
+    marqueeRef.current = { x0: x, y0: y, additive: e.shiftKey || e.ctrlKey || e.metaKey, moved: false };
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // sin captura el recuadro igual funciona dentro del área
+    }
+  };
+
+  const onWrapMove = (e: React.PointerEvent) => {
+    const m = marqueeRef.current;
+    if (!m) return;
+    const { x, y } = toDesign(e);
+    if (!m.moved && Math.hypot(x - m.x0, y - m.y0) * scale < 4) return;
+    m.moved = true;
+    setMarquee({ x: Math.min(x, m.x0), y: Math.min(y, m.y0), w: Math.abs(x - m.x0), h: Math.abs(y - m.y0) });
+  };
+
+  const onWrapUp = () => {
+    const m = marqueeRef.current;
+    marqueeRef.current = null;
+    if (!m) return;
+    if (!m.moved || !marquee) {
+      if (!m.additive) p.onSelect(null);
+      setMarquee(null);
+      return;
+    }
+    const hit = scene.elements
+      .filter((el) => el.x < marquee.x + marquee.w && el.x + el.w > marquee.x && el.y < marquee.y + marquee.h && el.y + el.h > marquee.y)
+      .map((el) => el.id);
+    p.onSelectMany(m.additive ? Array.from(new Set([...p.selectedIds, ...hit])) : hit);
+    setMarquee(null);
+  };
+
   return (
-    <div className="stage-wrap" onPointerDown={() => p.onSelect(null)}>
+    <div
+      className="stage-wrap"
+      onPointerDown={onWrapDown}
+      onPointerMove={onWrapMove}
+      onPointerUp={onWrapUp}
+    >
       <div className="stage" ref={wrapRef}>
         <div
           className="stage-inner"
@@ -220,7 +281,8 @@ export const Stage: React.FC<Props> = (p) => {
           <div className="overlay">
             {scene.elements.map((el) => {
               const visible = getAnimState(el, p.sceneFrame).visible;
-              const selected = el.id === p.selectedId;
+              const selected = p.selectedIds.includes(el.id);
+              const single = p.selectedIds.length === 1;
               return (
                 <div
                   key={el.id}
@@ -262,7 +324,7 @@ export const Stage: React.FC<Props> = (p) => {
                       }}
                     />
                   )}
-                  {selected && p.editingPointsId !== el.id && p.inlineId !== el.id && (
+                  {selected && single && p.editingPointsId !== el.id && p.inlineId !== el.id && (
                     <>
                       <span className="el-label">{el.name ?? el.type}</span>
                       {!el.locked &&
@@ -278,6 +340,7 @@ export const Stage: React.FC<Props> = (p) => {
                 </div>
               );
             })}
+            {marquee && <div className="marquee" style={{ left: marquee.x * scale, top: marquee.y * scale, width: marquee.w * scale, height: marquee.h * scale }} />}
             {p.penActive && (
               <PenLayer scale={scale} width={W} height={H} onDone={p.onPenDone} onCancel={p.onPenCancel} />
             )}

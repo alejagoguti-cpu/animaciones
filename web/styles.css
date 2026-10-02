@@ -302,3 +302,5 @@ input[type="range"] { width: 100%; accent-color: var(--red); }
 .ctx-menu button.danger { color: #ff8a92; }
 .ctx-menu kbd { font: inherit; font-size: 12px; color: var(--muted, #8a8a92); }
 .ctx-menu hr { border: 0; border-top: 1px solid var(--line-2); margin: 4px 2px; }
+
+.marquee { position: absolute; border: 1px dashed #3ad0ff; background: rgba(58,208,255,0.12); pointer-events: none; z-index: 8; }
