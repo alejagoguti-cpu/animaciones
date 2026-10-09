@@ -70,7 +70,7 @@ type ElementBase = {
 
 export type TextProps = {
   text: string;
-  font: "display" | "body";
+  font: "display" | "body" | "aleja";
   weight: number;
   size: number;
   color: string;
@@ -115,7 +115,7 @@ export type ElementData =
   | (ElementBase & { type: "vector"; props: VectorProps })
   | (ElementBase & {
       type: "pill";
-      props: { text: string; size: number; font: "display" | "body"; glow: boolean; shine: boolean; valign?: "top" | "middle" | "bottom"; offsetY?: number; italic?: boolean; underline?: boolean };
+      props: { text: string; size: number; font: "display" | "body" | "aleja"; glow: boolean; shine: boolean; valign?: "top" | "middle" | "bottom"; offsetY?: number; italic?: boolean; underline?: boolean };
     })
   | (ElementBase & {
       type: "card";

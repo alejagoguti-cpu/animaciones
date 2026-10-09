@@ -1,5 +1,6 @@
 import { loadFont } from "@remotion/fonts";
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
+import { loadFont as loadMichroma } from "@remotion/google-fonts/Michroma";
 import { staticFile } from "remotion";
 
 // Montserrat es la fuente de texto de bitaxus.com.
@@ -7,6 +8,9 @@ const montserrat = loadMontserrat("normal", {
   weights: ["400", "500", "600", "700", "900"],
   subsets: ["latin", "latin-ext"],
 });
+
+// Michroma: tipografía ancha de la marca personal de Alejandra Torres.
+const michroma = loadMichroma("normal", { weights: ["400"], subsets: ["latin", "latin-ext"] });
 
 // Belamor es la fuente de los titulares de bitaxus.com (archivos en public/fonts).
 const belamorWeights = [
@@ -27,6 +31,7 @@ belamorWeights.forEach(([name, weight]) =>
 export const fonts = {
   display: "Belamor",
   body: montserrat.fontFamily,
+  aleja: michroma.fontFamily,
 };
 
 export const colors = {

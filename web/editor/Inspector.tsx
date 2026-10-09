@@ -173,7 +173,7 @@ const TypeFields: React.FC<{
         <Section title="Texto">
           <TextField label="Contenido" value={p.text} multiline inputRef={textRef} onChange={(v) => setProp("text", v)} />
           <div className="row">
-            <SelectField label="Fuente" value={p.font} options={[["display", "Belamor (titular)"], ["body", "Montserrat (texto)"]]} onChange={(v) => setProp("font", v)} />
+            <SelectField label="Fuente" value={p.font} options={[["display", "Belamor (titular)"], ["body", "Montserrat (texto)"], ["aleja", "Michroma (Alejandra)"]]} onChange={(v) => setProp("font", v)} />
             <SelectField
               label="Grosor"
               value={String(p.weight) as "400"}
@@ -229,7 +229,7 @@ const TypeFields: React.FC<{
           <TextField label="Texto" value={el.props.text} multiline inputRef={textRef} onChange={(v) => setProp("text", v)} />
           <div className="row">
             <NumberField label="Tamaño" value={el.props.size} min={8} onChange={(v) => setProp("size", v)} />
-            <SelectField label="Fuente" value={el.props.font} options={[["display", "Belamor"], ["body", "Montserrat"]]} onChange={(v) => setProp("font", v)} />
+            <SelectField label="Fuente" value={el.props.font} options={[["display", "Belamor"], ["body", "Montserrat"], ["aleja", "Michroma (Alejandra)"]]} onChange={(v) => setProp("font", v)} />
             <SelectField label="Posición vertical" value={el.props.valign ?? "middle"} options={[["top", "Arriba"], ["middle", "Centro"], ["bottom", "Abajo"]]} onChange={(v) => setProp("valign", v)} />
             <NumberField label="Subir / bajar (px)" value={el.props.offsetY ?? 0} step={2} onChange={(v) => setProp("offsetY", v)} />
           </div>

@@ -22,6 +22,18 @@ export const BRAND = {
   palette: ["#c1121f", "#ff5a64", "#6e0a10", "#000000", "#1b1c1c", "#ffffff", "#bdbdbd", "#0b5c4b", "#25d366"],
 };
 
+// Las dos marcas con las que se trabaja: Bitaxus y la marca personal de Alejandra Torres.
+export const BRANDS = {
+  bitaxus: { id: "bitaxus", name: "Bitaxus", accent: "#c1121f", palette: BRAND.palette },
+  aleja: {
+    id: "aleja",
+    name: "Alejandra Torres",
+    accent: "#00b7cb",
+    palette: ["#00b7cb", "#5fd8e8", "#007a8a", "#000000", "#1b1c1c", "#ffffff", "#c8c8c8"],
+  },
+} as const;
+export type BrandId = keyof typeof BRANDS;
+
 export const defaultBackground = (): Background => ({
   kind: "glow",
   color: BRAND.red,

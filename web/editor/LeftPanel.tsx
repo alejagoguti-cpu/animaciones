@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BRAND, textPreset } from "../../src/editor/factory";
+import { BRAND, BRANDS, BrandId, textPreset } from "../../src/editor/factory";
 import { TEMPLATES } from "../../src/editor/templates";
 import { buildPath, VECTOR_PRESETS } from "../../src/editor/vector";
 import { Design, ElementType, FORMAT_SIZE } from "../../src/editor/types";
@@ -48,6 +48,7 @@ type Props = {
   onTemplate: (d: Design, mode: "replace" | "append") => void;
   onAsset: (a: Asset) => void;
   onColor: (c: string) => void;
+  onApplyBrand: (id: BrandId) => void;
   pickingBackground: boolean;
 };
 
@@ -66,7 +67,7 @@ export const LeftPanel: React.FC<Props> = (p) => (
       {p.tab === "texto" && <TextTab onAdd={p.onAdd} />}
       {p.tab === "elementos" && <ElementsTab onAdd={p.onAdd} />}
       {p.tab === "vectores" && <VectorsTab onAdd={p.onAdd} penActive={p.penActive} onPen={p.onPen} />}
-      {p.tab === "marca" && <BrandTab onAdd={p.onAdd} onColor={p.onColor} />}
+      {p.tab === "marca" && <BrandTab onAdd={p.onAdd} onColor={p.onColor} onApplyBrand={p.onApplyBrand} />}
       {p.tab === "assets" && (
         <>
           <UploadsTab onAsset={p.onAsset} picking={p.pickingBackground} />
@@ -156,7 +157,100 @@ const ElementsTab: React.FC<{ onAdd: Props["onAdd"] }> = ({ onAdd }) => (
   </section>
 );
 
-const BrandTab: React.FC<{ onAdd: Props["onAdd"]; onColor: Props["onColor"] }> = ({ onAdd, onColor }) => (
+// Logos de la marca personal de Alejandra Torres (PNG con fondo transparente, recortados).
+const ALEJA_LOGOS = [
+  { id: "icono-turquesa", name: "Ícono turquesa", w: 1318, h: 1986, dark: true },
+  { id: "icono-blanco", name: "Ícono blanco", w: 1318, h: 1986, dark: true },
+  { id: "icono-negro", name: "Ícono negro", w: 1318, h: 1986, dark: false },
+  { id: "icono-gris", name: "Ícono gris", w: 1318, h: 1986, dark: false },
+  { id: "nombre-turquesa", name: "Con nombre turquesa", w: 1365, h: 1950, dark: true },
+  { id: "nombre-blanco", name: "Con nombre blanco", w: 1365, h: 1950, dark: true },
+  { id: "nombre-negro", name: "Con nombre negro", w: 1365, h: 1950, dark: false },
+  { id: "nombre-gris", name: "Con nombre gris", w: 1365, h: 1950, dark: false },
+];
+
+const BrandTab: React.FC<{ onAdd: Props["onAdd"]; onColor: Props["onColor"]; onApplyBrand: Props["onApplyBrand"] }> = ({ onAdd, onColor, onApplyBrand }) => {
+  const [brand, setBrand] = useState<BrandId>(() => {
+    try {
+      return localStorage.getItem("brand") === "aleja" ? "aleja" : "bitaxus";
+    } catch {
+      return "bitaxus";
+    }
+  });
+  const pick = (b: BrandId) => {
+    setBrand(b);
+    try {
+      localStorage.setItem("brand", b);
+    } catch {
+      // sin almacenamiento: no se recuerda la marca elegida
+    }
+  };
+  const info = BRANDS[brand];
+  return (
+    <>
+      <section>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {(Object.keys(BRANDS) as BrandId[]).map((b) => (
+            <button key={b} className={`chip ${brand === b ? "on" : ""}`} onClick={() => pick(b)}>
+              {BRANDS[b].name}
+            </button>
+          ))}
+        </div>
+        <button className="btn small" style={{ marginTop: 10, width: "100%" }} onClick={() => onApplyBrand(brand)}>
+          Usar los colores de {info.name} en todo el diseño
+        </button>
+      </section>
+      {brand === "aleja" ? (
+        <>
+          <section>
+            <h3>Logos</h3>
+            <div className="asset-grid">
+              {ALEJA_LOGOS.map((l) => (
+                <button
+                  key={l.id}
+                  className="asset"
+                  title={l.name}
+                  onClick={() => onAdd("image", { src: `assets/aleja/${l.id}.png`, width: l.w, height: l.h })}
+                  style={{ backgroundColor: l.dark ? "#000" : "#fff", backgroundImage: `url("${BASE}assets/aleja/${l.id}.png")`, backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center" }}
+                />
+              ))}
+            </div>
+          </section>
+          <BrandColors palette={BRANDS.aleja.palette} onColor={onColor} />
+          <section>
+            <h3>Tipografías</h3>
+            <div className="preset" style={{ cursor: "default" }}>
+              <span style={{ fontSize: 15, fontFamily: "Michroma, sans-serif", letterSpacing: 1 }}>ALEJANDRA TORRES</span>
+              <small>Michroma · nombre y titulares (elígela en Fuente)</small>
+            </div>
+            <div className="preset" style={{ cursor: "default" }}>
+              <span style={{ fontSize: 18, fontWeight: 600 }}>Montserrat</span>
+              <small>Textos y botones</small>
+            </div>
+          </section>
+        </>
+      ) : (
+        <BitaxusBrand onAdd={onAdd} onColor={onColor} />
+      )}
+    </>
+  );
+};
+
+const BrandColors: React.FC<{ palette: readonly string[]; onColor: Props["onColor"] }> = ({ palette, onColor }) => (
+  <section>
+    <h3>Colores</h3>
+    <p className="muted" style={{ marginTop: 0 }}>
+      Clic para aplicarlo al elemento seleccionado (o al acento del diseño si no hay ninguno).
+    </p>
+    <div className="swatches">
+      {palette.map((c) => (
+        <button key={c} className="swatch" style={{ background: c }} onClick={() => onColor(c)} title={c} />
+      ))}
+    </div>
+  </section>
+);
+
+const BitaxusBrand: React.FC<{ onAdd: Props["onAdd"]; onColor: Props["onColor"] }> = ({ onAdd, onColor }) => (
   <>
     <section>
       <h3>Logo</h3>

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { fonts } from "../../src/theme";
+import { fontFamily } from "../../src/editor/render/ElementView";
 import { ElementData } from "../../src/editor/types";
 
 // Edición del texto directamente sobre el lienzo (doble clic).
@@ -28,7 +29,7 @@ export const InlineText: React.FC<{
   const p = el.props;
   const style: React.CSSProperties = isText
     ? {
-        fontFamily: p.font === "display" ? fonts.display : fonts.body,
+        fontFamily: fontFamily(p.font),
         fontWeight: el.type === "text" ? el.props.weight : 700,
         fontStyle: el.props.italic ? "italic" : "normal",
         textDecoration: el.props.underline ? "underline" : "none",
@@ -40,7 +41,7 @@ export const InlineText: React.FC<{
         color: el.type === "text" ? el.props.color : "#fff",
       }
     : {
-        fontFamily: p.font === "display" ? fonts.display : fonts.body,
+        fontFamily: fontFamily(p.font),
         fontWeight: 700,
         fontStyle: el.props.italic ? "italic" : "normal",
         textDecoration: el.props.underline ? "underline" : "none",

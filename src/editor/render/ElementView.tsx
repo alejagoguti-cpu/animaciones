@@ -18,7 +18,7 @@ export const resolveSrc = (src: string) => {
   return staticFile(src);
 };
 
-const fontFamily = (f: "display" | "body") => (f === "display" ? fonts.display : fonts.body);
+export const fontFamily = (f: "display" | "body" | "aleja") => (f === "display" ? fonts.display : f === "aleja" ? fonts.aleja : fonts.body);
 
 export const ElementView: React.FC<{ el: ElementData }> = ({ el }) => {
   const frame = useCurrentFrame();

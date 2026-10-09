@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { PlayerRef } from "@remotion/player";
-import { BRAND, changeFormat, cloneScene, newElement, newScene, uid } from "../../src/editor/factory";
+import { BRAND, BRANDS, BrandId, changeFormat, cloneScene, newElement, newScene, uid } from "../../src/editor/factory";
 import { normalizeNodes } from "../../src/editor/vector";
 import { sceneAtFrame, sceneFrames, sceneStarts, totalFrames } from "../../src/editor/timing";
 import { Design, ElementData, ElementType, Format, FORMAT_SIZE, FPS, VectorNode } from "../../src/editor/types";
@@ -259,6 +259,16 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
       if (e.type === "shape") return { ...e, props: { ...e.props, fill: c } };
       return e;
     });
+  };
+
+  // Pasa todo el diseño a los colores de una marca: acento y resplandor de cada escena.
+  const onApplyBrand = (id: BrandId) => {
+    const accent = BRANDS[id].accent;
+    commit((d) => ({
+      ...d,
+      accent,
+      scenes: d.scenes.map((sc) => ({ ...sc, background: sc.background.kind === "glow" ? { ...sc.background, color: accent } : sc.background })),
+    }));
   };
 
   const onTemplate = (t: Design, mode: "replace" | "append") => {
@@ -602,6 +612,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         onTemplate={onTemplate}
         onAsset={onAsset}
         onColor={onColor}
+        onApplyBrand={onApplyBrand}
         pickingBackground={pickingBg}
         penActive={penActive}
         onPen={(on) => {
