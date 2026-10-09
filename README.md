@@ -23,6 +23,7 @@ Código en `web/` (la app) y `src/editor/` (formato de los diseños y cómo se d
 - **Animaciones:** entrada, salida y movimiento continuo por elemento; cuándo aparece y se va se ajusta en la línea de tiempo.
 - **Escenas:** varias escenas con transición y duración propias; formatos 9:16, 4:5, 1:1 y 16:9.
 - **Exportar:** video MP4 (HD, 2K o 4K) o imagen estática PNG/JPG del fotograma donde está el cabezal; se genera en el navegador (Chrome o Edge) y la pestaña debe estar visible.
+- **Plantillas de Alejandra Torres:** Presentación (3 escenas), Frase, Post claro 4:5 y Portada reel, en la pestaña Plantillas.
 - **Dos marcas:** la pestaña Marca cambia entre Bitaxus y Alejandra Torres (logos recortados con fondo transparente en `public/assets/aleja/`, paleta turquesa #00b7cb, tipografía Michroma) y el botón "Usar los colores de..." pasa todo el diseño a esa marca.
 - **Assets de marca:** `public/assets/` con su lista en `public/assets/manifest.json`.
 - **Selección múltiple:** Shift o Ctrl + clic suma o quita elementos, arrastrar sobre una zona vacía dibuja un recuadro de selección, Ctrl+A selecciona todo. Mover, copiar, cortar, pegar, duplicar y eliminar funcionan con todos a la vez.
