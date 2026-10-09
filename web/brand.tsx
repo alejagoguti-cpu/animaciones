@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { BRAND_KIND, BRANDS, BrandId } from "../src/editor/factory";
 
 const KEY = "brand";
+const BASE = import.meta.env.BASE_URL;
 
 // Marca activa (Bitaxus o Alejandra Torres): se recuerda en el navegador. Cambia los
 // colores de la interfaz, los diseños y las plantillas que se muestran.
@@ -55,6 +56,17 @@ const BrandTile: React.FC<{ brand: BrandId }> = ({ brand }) => (
   </span>
 );
 
+// Marca para el encabezado: Bitaxus con su logo; Alejandra con su ícono y su nombre.
+export const BrandMark: React.FC<{ brand: BrandId; height?: number }> = ({ brand, height = 24 }) =>
+  brand === "bitaxus" ? (
+    <img src={`${BASE}logo.png`} alt="Bitaxus" style={{ height, width: "auto", display: "block" }} />
+  ) : (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: height * 0.5, whiteSpace: "nowrap" }}>
+      <img src={`${BASE}assets/aleja/icono-blanco.png`} alt="" style={{ height: height * 1.6, width: "auto", display: "block" }} />
+      <span style={{ fontFamily: "Michroma, sans-serif", fontSize: height * 0.7, letterSpacing: "0.08em" }}>ALEJANDRA TORRES</span>
+    </span>
+  );
+
 // Nombre de la marca con menú: al desplegarlo se elige con qué marca se trabaja.
 export const BrandSwitcher: React.FC = () => {
   const brand = useBrand();
@@ -78,7 +90,7 @@ export const BrandSwitcher: React.FC = () => {
   return (
     <div className="brand-switch" ref={ref}>
       <button className="brand-btn" onClick={() => setOpen((o) => !o)} title="Cambiar de marca" aria-haspopup="menu" aria-expanded={open}>
-        <span className="brand-name">{BRANDS[brand].name}</span>
+        <BrandMark brand={brand} />
         <span className="caret">⌄</span>
       </button>
       {open && (
@@ -109,7 +121,7 @@ export const BrandSwitcher: React.FC = () => {
 
 // Etiqueta de la marca del diseño abierto (dentro del editor no se mezclan).
 export const BrandTag: React.FC<{ brand: BrandId }> = ({ brand }) => (
-  <span className="brand-tag" title={BRAND_KIND[brand]}>
-    {BRANDS[brand].name}
+  <span className="brand-tag" title={BRANDS[brand].name + " · " + BRAND_KIND[brand]}>
+    <BrandMark brand={brand} height={16} />
   </span>
 );

@@ -331,4 +331,4 @@ input[type="range"] { width: 100%; accent-color: var(--red); }
 .brand-menu .info { display: flex; flex-direction: column; gap: 4px; }
 .brand-menu .info b { font-size: 17px; font-weight: 700; }
 .brand-menu .info span { font-size: 14px; color: var(--muted); }
-.brand-tag { font-weight: 800; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 10px; border-radius: 8px; background: rgba(var(--red-rgb), 0.18); border: 1px solid rgba(var(--red-rgb), 0.5); margin: 0 4px; white-space: nowrap; }
+.brand-tag { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 8px; background: rgba(var(--red-rgb), 0.18); border: 1px solid rgba(var(--red-rgb), 0.5); margin: 0 4px; white-space: nowrap; }
