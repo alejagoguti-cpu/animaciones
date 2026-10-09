@@ -31,6 +31,8 @@ export const DesignList: React.FC = () => {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const brand = useBrand();
+  // Cada diseño pertenece a una marca; los anteriores a las dos marcas son de Bitaxus.
+  const myRows = (rows ?? []).filter((r) => (r.data.brand ?? "bitaxus") === brand);
 
   const load = async () => {
     const { data, error } = await supabase
@@ -97,9 +99,10 @@ export const DesignList: React.FC = () => {
 
         <h2 className="display">Mis diseños</h2>
         {rows === null && !error && <p className="muted">Cargando…</p>}
+        {rows && rows.length > 0 && myRows.length === 0 && <p className="muted">Todavía no tienes diseños de {BRANDS[brand].name}. Empieza con un formato o una plantilla.</p>}
         {rows?.length === 0 && <p className="muted">Todavía no hay diseños. Empieza con un formato o una plantilla.</p>}
         <div className="grid">
-          {rows?.map((row) => (
+          {myRows.map((row) => (
             <div key={row.id} className="tile" onClick={() => go(`/d/${row.id}`)} role="button" style={{ cursor: "pointer" }}>
               <div className="thumb">
                 <div style={{ height: "100%", aspectRatio: `${FORMAT_SIZE[row.data.format]?.width ?? 1080} / ${FORMAT_SIZE[row.data.format]?.height ?? 1920}` }}>
@@ -125,7 +128,7 @@ export const DesignList: React.FC = () => {
           {TEMPLATES.filter((t) => t.id.startsWith("aleja-") === (brand === "aleja")).map((t) => {
             const d = t.make();
             return (
-              <button key={t.id} className="tile" disabled={busy} onClick={() => create(t.name, t.make())}>
+              <button key={t.id} className="tile" disabled={busy} onClick={() => create(t.name, { ...t.make(), brand })}>
                 <div className="thumb">
                   <div style={{ height: "100%", aspectRatio: `${FORMAT_SIZE[d.format].width} / ${FORMAT_SIZE[d.format].height}` }}>
                     <DesignPreview design={d} />

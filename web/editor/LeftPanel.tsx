@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BRAND, BRANDS, BrandId, textPreset } from "../../src/editor/factory";
-import { setBrand, useBrand } from "../brand";
+import { BRAND, BRAND_KIND, BRANDS, BrandId, textPreset } from "../../src/editor/factory";
 import { TEMPLATES } from "../../src/editor/templates";
 import { buildPath, VECTOR_PRESETS } from "../../src/editor/vector";
 import { Design, ElementType, FORMAT_SIZE } from "../../src/editor/types";
@@ -50,6 +49,7 @@ type Props = {
   onAsset: (a: Asset) => void;
   onColor: (c: string) => void;
   onApplyBrand: (id: BrandId) => void;
+  brand: BrandId;
   pickingBackground: boolean;
 };
 
@@ -64,25 +64,25 @@ export const LeftPanel: React.FC<Props> = (p) => (
       ))}
     </nav>
     <div className="left-content">
-      {p.tab === "plantillas" && <Templates onTemplate={p.onTemplate} />}
+      {p.tab === "plantillas" && <Templates onTemplate={p.onTemplate} brand={p.brand} />}
       {p.tab === "texto" && <TextTab onAdd={p.onAdd} />}
       {p.tab === "elementos" && <ElementsTab onAdd={p.onAdd} />}
       {p.tab === "vectores" && <VectorsTab onAdd={p.onAdd} penActive={p.penActive} onPen={p.onPen} />}
-      {p.tab === "marca" && <BrandTab onAdd={p.onAdd} onColor={p.onColor} onApplyBrand={p.onApplyBrand} />}
+      {p.tab === "marca" && <BrandTab brand={p.brand} onAdd={p.onAdd} onColor={p.onColor} onApplyBrand={p.onApplyBrand} />}
       {p.tab === "assets" && (
         <>
           <UploadsTab onAsset={p.onAsset} picking={p.pickingBackground} />
-          <AssetsTab onAsset={p.onAsset} picking={p.pickingBackground} />
+          {p.brand === "bitaxus" && <AssetsTab onAsset={p.onAsset} picking={p.pickingBackground} />}
         </>
       )}
     </div>
   </aside>
 );
 
-const Templates: React.FC<{ onTemplate: Props["onTemplate"] }> = ({ onTemplate }) => (
+const Templates: React.FC<{ onTemplate: Props["onTemplate"]; brand: BrandId }> = ({ onTemplate, brand }) => (
   <section>
     <h3>Plantillas</h3>
-    {TEMPLATES.map((t) => {
+    {TEMPLATES.filter((t) => t.id.startsWith("aleja-") === (brand === "aleja")).map((t) => {
       const d = t.make();
       return (
         <div key={t.id} className="tpl">
@@ -170,22 +170,25 @@ const ALEJA_LOGOS = [
   { id: "nombre-gris", name: "Con nombre gris", w: 1365, h: 1950, dark: false },
 ];
 
-const BrandTab: React.FC<{ onAdd: Props["onAdd"]; onColor: Props["onColor"]; onApplyBrand: Props["onApplyBrand"] }> = ({ onAdd, onColor, onApplyBrand }) => {
-  const brand = useBrand();
-  const pick = setBrand;
+const BrandTab: React.FC<{ brand: BrandId; onAdd: Props["onAdd"]; onColor: Props["onColor"]; onApplyBrand: Props["onApplyBrand"] }> = ({ brand, onAdd, onColor, onApplyBrand }) => {
+  const other: BrandId = brand === "aleja" ? "bitaxus" : "aleja";
   const info = BRANDS[brand];
   return (
     <>
       <section>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {(Object.keys(BRANDS) as BrandId[]).map((b) => (
-            <button key={b} className={`chip ${brand === b ? "on" : ""}`} onClick={() => pick(b)}>
-              {BRANDS[b].name}
-            </button>
-          ))}
-        </div>
-        <button className="btn small" style={{ marginTop: 10, width: "100%" }} onClick={() => onApplyBrand(brand)}>
-          Usar los colores de {info.name} en todo el diseño
+        <h3>{info.name}</h3>
+        <p className="muted" style={{ marginTop: 0 }}>
+          {BRAND_KIND[brand]}. Este diseño es de esta marca: solo se ven sus plantillas, logos y colores.
+        </p>
+        <button className="btn small" style={{ width: "100%" }} onClick={() => onApplyBrand(brand)}>
+          Aplicar los colores de {info.name} a todas las escenas
+        </button>
+        <button
+          className="btn small ghost"
+          style={{ width: "100%", marginTop: 6 }}
+          onClick={() => window.confirm(`Esto pasa el diseño a la marca ${BRANDS[other].name} (colores y resplandor de todas las escenas). ¿Continuar?`) && onApplyBrand(other)}
+        >
+          Pasar este diseño a {BRANDS[other].name}
         </button>
       </section>
       {brand === "aleja" ? (

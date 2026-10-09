@@ -33,12 +33,14 @@ export const BRANDS = {
   },
 } as const;
 export type BrandId = keyof typeof BRANDS;
+export const BRAND_KIND: Record<BrandId, string> = { bitaxus: "Marca empresarial", aleja: "Marca personal" };
 
 // Pasa un diseño a los colores de una marca: acento y resplandor de cada escena.
 export const applyBrand = (d: Design, id: BrandId): Design => {
   const accent = BRANDS[id].accent;
   return {
     ...d,
+    brand: id,
     accent,
     scenes: d.scenes.map((sc) => ({ ...sc, background: sc.background.kind === "glow" ? { ...sc.background, color: accent } : sc.background })),
   };

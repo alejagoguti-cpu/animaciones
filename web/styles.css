@@ -318,12 +318,17 @@ input[type="range"] { width: 100%; accent-color: var(--red); }
 :root[data-brand="aleja"] { --red: #00b7cb; --red-2: #5fd8e8; --red-soft: rgba(0, 183, 203, 0.16); --red-rgb: 0, 183, 203; }
 
 .brand-switch { position: relative; display: inline-block; }
-.brand-btn { display: inline-flex; align-items: center; gap: 10px; background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 6px 8px; color: var(--text); cursor: pointer; }
-.brand-btn:hover { border-color: var(--line-2); background: rgba(255,255,255,0.04); }
-.brand-btn .caret { font-size: 12px; color: var(--muted); }
-.brand-menu { position: absolute; left: 0; top: calc(100% + 6px); z-index: 70; min-width: 260px; padding: 8px; background: var(--panel); border: 1px solid var(--line-2); border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 4px; }
-.brand-menu small { color: var(--muted); padding: 4px 8px 6px; font-size: 12px; }
-.brand-menu button { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
-.brand-menu button:hover { background: var(--panel-3); }
-.brand-menu button.on { border-color: var(--red-2); }
-.brand-menu .check { color: var(--red-2); font-weight: 700; }
+.brand-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 6px 8px; color: var(--text); cursor: pointer; }
+.brand-btn:hover { background: rgba(255,255,255,0.05); }
+.brand-btn .brand-name { font-weight: 800; font-size: 20px; letter-spacing: 0.01em; text-transform: uppercase; }
+.brand-btn .caret { font-size: 20px; line-height: 1; color: var(--text); transform: translateY(-3px); }
+.brand-menu { position: absolute; left: 0; top: calc(100% + 8px); z-index: 70; min-width: 340px; padding: 10px; background: #130d0d; border: 1px solid var(--line-2); border-radius: 16px; box-shadow: 0 18px 54px rgba(0,0,0,0.65); display: flex; flex-direction: column; gap: 6px; }
+.brand-menu small { color: var(--muted); padding: 6px 10px 8px; font-size: 13px; letter-spacing: 0.04em; }
+.brand-menu button { display: flex; align-items: center; gap: 16px; padding: 12px; border: 0; border-radius: 12px; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
+.brand-menu button:hover { background: rgba(255,255,255,0.06); }
+.brand-menu button.on { background: rgba(var(--red-rgb), 0.16); }
+.brand-menu .brand-tile { width: 48px; height: 48px; flex-shrink: 0; border-radius: 12px; background: #050303; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 17px; }
+.brand-menu .info { display: flex; flex-direction: column; gap: 4px; }
+.brand-menu .info b { font-size: 17px; font-weight: 700; }
+.brand-menu .info span { font-size: 14px; color: var(--muted); }
+.brand-tag { font-weight: 800; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 10px; border-radius: 8px; background: rgba(var(--red-rgb), 0.18); border: 1px solid rgba(var(--red-rgb), 0.5); margin: 0 4px; white-space: nowrap; }

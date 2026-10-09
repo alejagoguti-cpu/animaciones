@@ -6,7 +6,7 @@ import { sceneAtFrame, sceneFrames, sceneStarts, totalFrames } from "../../src/e
 import { Design, ElementData, ElementType, Format, FORMAT_SIZE, FPS, VectorNode } from "../../src/editor/types";
 import { DesignPreview } from "../DesignList";
 import { go } from "../App";
-import { BrandSwitcher } from "../brand";
+import { BrandTag, paintBrand, useBrand } from "../brand";
 import type { SaveState } from "../EditorPage";
 import { publicUrl, supabase, UPLOADS_BUCKET } from "../supabase";
 import { updateElement, updateScene, useDesignStore } from "../store";
@@ -76,6 +76,14 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
     }
     onChange(name, design);
   }, [design, name]);
+
+  // La marca del diseño manda dentro del editor: colores, plantillas y piezas son solo de esa marca.
+  const globalBrand = useBrand();
+  const brand: BrandId = design.brand ?? "bitaxus";
+  useEffect(() => {
+    paintBrand(brand);
+    return () => paintBrand(globalBrand);
+  }, [brand, globalBrand]);
 
   const safeIdx = Math.min(sceneIdx, design.scenes.length - 1);
   const scene = design.scenes[safeIdx];
@@ -268,7 +276,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   const onTemplate = (t: Design, mode: "replace" | "append") => {
     const adapted = t.format === design.format ? t : changeFormat(t, design.format);
     if (mode === "replace") {
-      commit(adapted);
+      commit({ ...adapted, brand: t.brand ?? brand });
       selectScene(0);
     } else {
       commit((d) => ({ ...d, scenes: [...d.scenes, ...adapted.scenes] }));
@@ -577,7 +585,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         <button className="icon-btn" onClick={() => go("/")} title="Mis diseños">
           ←
         </button>
-        <BrandSwitcher height={18} />
+        <BrandTag brand={brand} />
         <span className="divider" />
         <input className="name" value={name} onChange={(e) => setName(e.target.value)} aria-label="Nombre del diseño" />
         <span className={`save-dot ${saveState}`} title={SAVE_LABEL[saveState]} />
@@ -607,6 +615,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         onAsset={onAsset}
         onColor={onColor}
         onApplyBrand={onApplyBrand}
+        brand={brand}
         pickingBackground={pickingBg}
         penActive={penActive}
         onPen={(on) => {

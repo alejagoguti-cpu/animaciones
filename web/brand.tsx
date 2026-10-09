@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { BRANDS, BrandId } from "../src/editor/factory";
+import { BRAND_KIND, BRANDS, BrandId } from "../src/editor/factory";
 
-const BASE = import.meta.env.BASE_URL;
 const KEY = "brand";
 
-// Marca activa (Bitaxus o Alejandra Torres): se recuerda en el navegador y cambia
-// los colores de la interfaz, las plantillas y los diseños nuevos.
+// Marca activa (Bitaxus o Alejandra Torres): se recuerda en el navegador. Cambia los
+// colores de la interfaz, los diseños y las plantillas que se muestran.
 const listeners = new Set<() => void>();
 const read = (): BrandId => {
   try {
@@ -15,10 +14,12 @@ const read = (): BrandId => {
   }
 };
 let current: BrandId = read();
-const paint = () => {
-  document.documentElement.dataset.brand = current;
+
+// Solo pinta los colores de la interfaz (sin cambiar la marca elegida en la lista).
+export const paintBrand = (b: BrandId) => {
+  document.documentElement.dataset.brand = b;
 };
-paint();
+paintBrand(current);
 
 export const setBrand = (b: BrandId) => {
   current = b;
@@ -27,7 +28,7 @@ export const setBrand = (b: BrandId) => {
   } catch {
     // sin almacenamiento: la marca elegida no se recuerda
   }
-  paint();
+  paintBrand(b);
   listeners.forEach((l) => l());
 };
 
@@ -40,21 +41,22 @@ export const useBrand = (): BrandId =>
     () => current,
   );
 
-// Logo de cada marca para el encabezado.
-export const BrandMark: React.FC<{ brand: BrandId; height?: number }> = ({ brand, height = 22 }) =>
-  brand === "aleja" ? (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: height * 0.45 }}>
-      <img src={`${BASE}assets/aleja/icono-blanco.png`} alt="" style={{ height: height * 1.5, width: "auto" }} />
-      <span style={{ fontFamily: "Michroma, sans-serif", fontSize: height * 0.62, letterSpacing: "0.08em", whiteSpace: "nowrap" }}>
-        ALEJANDRA TORRES
-      </span>
-    </span>
-  ) : (
-    <img src={`${BASE}logo.png`} alt="Bitaxus" style={{ height, width: "auto" }} />
-  );
+// Cuadrito de cada marca: letra para la empresarial, persona para la personal.
+const BrandTile: React.FC<{ brand: BrandId }> = ({ brand }) => (
+  <span className="brand-tile">
+    {brand === "bitaxus" ? (
+      <b>B</b>
+    ) : (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 20c.6-3.6 3.4-5.5 7-5.5s6.4 1.9 7 5.5" />
+      </svg>
+    )}
+  </span>
+);
 
-// Logo con menú: al desplegarlo se elige con qué marca se trabaja.
-export const BrandSwitcher: React.FC<{ height?: number }> = ({ height = 22 }) => {
+// Nombre de la marca con menú: al desplegarlo se elige con qué marca se trabaja.
+export const BrandSwitcher: React.FC = () => {
   const brand = useBrand();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -76,12 +78,12 @@ export const BrandSwitcher: React.FC<{ height?: number }> = ({ height = 22 }) =>
   return (
     <div className="brand-switch" ref={ref}>
       <button className="brand-btn" onClick={() => setOpen((o) => !o)} title="Cambiar de marca" aria-haspopup="menu" aria-expanded={open}>
-        <BrandMark brand={brand} height={height} />
-        <span className="caret">▾</span>
+        <span className="brand-name">{BRANDS[brand].name}</span>
+        <span className="caret">⌄</span>
       </button>
       {open && (
         <div className="brand-menu" role="menu">
-          <small>Trabajar con la marca</small>
+          <small>SELECCIONAR MARCA</small>
           {(Object.keys(BRANDS) as BrandId[]).map((b) => (
             <button
               key={b}
@@ -92,10 +94,11 @@ export const BrandSwitcher: React.FC<{ height?: number }> = ({ height = 22 }) =>
                 setOpen(false);
               }}
             >
-              <span className="mark">
-                <BrandMark brand={b} height={18} />
+              <BrandTile brand={b} />
+              <span className="info">
+                <b>{BRANDS[b].name}</b>
+                <span>{BRAND_KIND[b]}</span>
               </span>
-              <span className="check">{b === brand ? "✓" : ""}</span>
             </button>
           ))}
         </div>
@@ -103,3 +106,10 @@ export const BrandSwitcher: React.FC<{ height?: number }> = ({ height = 22 }) =>
     </div>
   );
 };
+
+// Etiqueta de la marca del diseño abierto (dentro del editor no se mezclan).
+export const BrandTag: React.FC<{ brand: BrandId }> = ({ brand }) => (
+  <span className="brand-tag" title={BRAND_KIND[brand]}>
+    {BRANDS[brand].name}
+  </span>
+);

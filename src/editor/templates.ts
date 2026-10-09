@@ -160,6 +160,7 @@ const alejaText = (t: string, b: ReturnType<typeof box>, a: Anim, preset: Parame
 const presentacionAleja = (): Design => ({
   version: 1,
   format: "9:16",
+  brand: "aleja",
   accent: ALEJA,
   scenes: [
     sceneAleja("Logo", 3.5, "none", [
@@ -182,6 +183,7 @@ const presentacionAleja = (): Design => ({
 const fraseAleja = (): Design => ({
   version: 1,
   format: "9:16",
+  brand: "aleja",
   accent: ALEJA,
   scenes: [
     sceneAleja("Frase", 6, "none", [
@@ -195,6 +197,7 @@ const fraseAleja = (): Design => ({
 const feedAleja = (): Design => ({
   version: 1,
   format: "4:5",
+  brand: "aleja",
   accent: ALEJA,
   scenes: [
     sceneAleja("Post", 6, "none", [
@@ -210,6 +213,7 @@ const feedAleja = (): Design => ({
 const portadaAleja = (): Design => ({
   version: 1,
   format: "9:16",
+  brand: "aleja",
   accent: ALEJA,
   scenes: [
     sceneAleja("Portada", 3, "none", [

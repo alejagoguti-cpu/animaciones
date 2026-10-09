@@ -152,6 +152,8 @@ export type Scene = {
 
 export type Design = {
   version: 1;
+  // Marca a la que pertenece el diseño; los anteriores a las dos marcas son de Bitaxus.
+  brand?: "bitaxus" | "aleja";
   format: Format;
   accent: string;
   scenes: Scene[];
