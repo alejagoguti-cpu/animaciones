@@ -13,6 +13,7 @@
   --red: #c1121f;
   --red-2: #ff4d57;
   --red-soft: rgba(193, 18, 31, 0.16);
+  --red-rgb: 193, 18, 31;
   --display: "Belamor", "Montserrat", sans-serif;
   --body: "Montserrat", system-ui, sans-serif;
   color-scheme: dark;
@@ -73,8 +74,8 @@ input[type="range"] { width: 100%; accent-color: var(--red); }
 .brand-bg {
   background:
     radial-gradient(rgba(255,255,255,0.08) 1.2px, transparent 1.2px) 0 0 / 28px 28px,
-    radial-gradient(60% 45% at 15% 5%, rgba(193,18,31,0.32), transparent 70%),
-    radial-gradient(55% 40% at 95% 95%, rgba(193,18,31,0.22), transparent 75%),
+    radial-gradient(60% 45% at 15% 5%, rgba(var(--red-rgb),0.32), transparent 70%),
+    radial-gradient(55% 40% at 95% 95%, rgba(var(--red-rgb),0.22), transparent 75%),
     #000;
 }
 .display { font-family: var(--display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.01em; }
@@ -312,3 +313,17 @@ input[type="range"] { width: 100%; accent-color: var(--red); }
 .glow-handle:active { cursor: grabbing; }
 
 .glow-handle.extra { background: rgba(255,255,255,0.9); width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 4px; transform: rotate(45deg); }
+
+/* Marca personal de Alejandra Torres: la interfaz pasa a turquesa. */
+:root[data-brand="aleja"] { --red: #00b7cb; --red-2: #5fd8e8; --red-soft: rgba(0, 183, 203, 0.16); --red-rgb: 0, 183, 203; }
+
+.brand-switch { position: relative; display: inline-block; }
+.brand-btn { display: inline-flex; align-items: center; gap: 10px; background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 6px 8px; color: var(--text); cursor: pointer; }
+.brand-btn:hover { border-color: var(--line-2); background: rgba(255,255,255,0.04); }
+.brand-btn .caret { font-size: 12px; color: var(--muted); }
+.brand-menu { position: absolute; left: 0; top: calc(100% + 6px); z-index: 70; min-width: 260px; padding: 8px; background: var(--panel); border: 1px solid var(--line-2); border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 4px; }
+.brand-menu small { color: var(--muted); padding: 4px 8px 6px; font-size: 12px; }
+.brand-menu button { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
+.brand-menu button:hover { background: var(--panel-3); }
+.brand-menu button.on { border-color: var(--red-2); }
+.brand-menu .check { color: var(--red-2); font-weight: 700; }

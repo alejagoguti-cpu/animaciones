@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Thumbnail } from "@remotion/player";
 import { DesignVideo } from "../src/editor/render/DesignVideo";
-import { emptyDesign } from "../src/editor/factory";
+import { applyBrand, BRANDS, emptyDesign } from "../src/editor/factory";
+import { BrandSwitcher, useBrand } from "./brand";
 import { TEMPLATES } from "../src/editor/templates";
 import { totalFrames } from "../src/editor/timing";
 import { Design, Format, FORMAT_SIZE, FPS } from "../src/editor/types";
-import { go, LOGO } from "./App";
+import { go } from "./App";
 import { DesignRow, supabase } from "./supabase";
 
 export const DesignPreview: React.FC<{ design: Design; frame?: number }> = ({ design, frame }) => {
@@ -29,6 +30,7 @@ export const DesignList: React.FC = () => {
   const [rows, setRows] = useState<DesignRow[] | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const brand = useBrand();
 
   const load = async () => {
     const { data, error } = await supabase
@@ -67,7 +69,7 @@ export const DesignList: React.FC = () => {
   return (
     <div className="list-page brand-bg">
       <header className="list-header">
-        <img src={LOGO} alt="Bitaxus" />
+        <BrandSwitcher />
         <div style={{ flex: 1 }} />
         <a className="btn ghost small" href={`${import.meta.env.BASE_URL}studio/`} target="_blank" rel="noreferrer">
           Estudio Remotion ↗
@@ -77,10 +79,10 @@ export const DesignList: React.FC = () => {
       <div className="list-body">
         <div className="hero">
           <h1 className="display">Animaciones</h1>
-          <p>Crea videos animados con la marca Bitaxus y descárgalos en MP4.</p>
+          <p>Crea videos animados con la marca {BRANDS[brand].name} y descárgalos en MP4.</p>
           <div className="formats">
             {(Object.keys(FORMAT_SIZE) as Format[]).map((f) => (
-              <button key={f} className="format-btn" disabled={busy} onClick={() => create("Sin título", emptyDesign(f))}>
+              <button key={f} className="format-btn" disabled={busy} onClick={() => create("Sin título", applyBrand(emptyDesign(f), brand))}>
                 <span className="shape" style={{ aspectRatio: `${FORMAT_SIZE[f].width} / ${FORMAT_SIZE[f].height}` }} />
                 <span>
                   <b>{f}</b>
@@ -118,9 +120,9 @@ export const DesignList: React.FC = () => {
           ))}
         </div>
 
-        <h2 className="display">Plantillas</h2>
+        <h2 className="display">Plantillas · {BRANDS[brand].name}</h2>
         <div className="grid">
-          {TEMPLATES.map((t) => {
+          {TEMPLATES.filter((t) => t.id.startsWith("aleja-") === (brand === "aleja")).map((t) => {
             const d = t.make();
             return (
               <button key={t.id} className="tile" disabled={busy} onClick={() => create(t.name, t.make())}>

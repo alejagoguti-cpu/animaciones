@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { PlayerRef } from "@remotion/player";
-import { BRAND, BRANDS, BrandId, changeFormat, cloneScene, newElement, newScene, uid } from "../../src/editor/factory";
+import { applyBrand, BRAND, BrandId, changeFormat, cloneScene, newElement, newScene, uid } from "../../src/editor/factory";
 import { normalizeNodes } from "../../src/editor/vector";
 import { sceneAtFrame, sceneFrames, sceneStarts, totalFrames } from "../../src/editor/timing";
 import { Design, ElementData, ElementType, Format, FORMAT_SIZE, FPS, VectorNode } from "../../src/editor/types";
 import { DesignPreview } from "../DesignList";
-import { go, LOGO } from "../App";
+import { go } from "../App";
+import { BrandSwitcher } from "../brand";
 import type { SaveState } from "../EditorPage";
 import { publicUrl, supabase, UPLOADS_BUCKET } from "../supabase";
 import { updateElement, updateScene, useDesignStore } from "../store";
@@ -262,14 +263,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
   };
 
   // Pasa todo el diseño a los colores de una marca: acento y resplandor de cada escena.
-  const onApplyBrand = (id: BrandId) => {
-    const accent = BRANDS[id].accent;
-    commit((d) => ({
-      ...d,
-      accent,
-      scenes: d.scenes.map((sc) => ({ ...sc, background: sc.background.kind === "glow" ? { ...sc.background, color: accent } : sc.background })),
-    }));
-  };
+  const onApplyBrand = (id: BrandId) => commit((d) => applyBrand(d, id));
 
   const onTemplate = (t: Design, mode: "replace" | "append") => {
     const adapted = t.format === design.format ? t : changeFormat(t, design.format);
@@ -583,7 +577,7 @@ export const Editor: React.FC<Props> = ({ initialName, initialDesign, onChange, 
         <button className="icon-btn" onClick={() => go("/")} title="Mis diseños">
           ←
         </button>
-        <img src={LOGO} alt="Bitaxus" onClick={() => go("/")} title="Mis diseños" />
+        <BrandSwitcher height={18} />
         <span className="divider" />
         <input className="name" value={name} onChange={(e) => setName(e.target.value)} aria-label="Nombre del diseño" />
         <span className={`save-dot ${saveState}`} title={SAVE_LABEL[saveState]} />

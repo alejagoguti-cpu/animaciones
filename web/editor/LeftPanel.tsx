@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { BRAND, BRANDS, BrandId, textPreset } from "../../src/editor/factory";
+import { setBrand, useBrand } from "../brand";
 import { TEMPLATES } from "../../src/editor/templates";
 import { buildPath, VECTOR_PRESETS } from "../../src/editor/vector";
 import { Design, ElementType, FORMAT_SIZE } from "../../src/editor/types";
@@ -170,21 +171,8 @@ const ALEJA_LOGOS = [
 ];
 
 const BrandTab: React.FC<{ onAdd: Props["onAdd"]; onColor: Props["onColor"]; onApplyBrand: Props["onApplyBrand"] }> = ({ onAdd, onColor, onApplyBrand }) => {
-  const [brand, setBrand] = useState<BrandId>(() => {
-    try {
-      return localStorage.getItem("brand") === "aleja" ? "aleja" : "bitaxus";
-    } catch {
-      return "bitaxus";
-    }
-  });
-  const pick = (b: BrandId) => {
-    setBrand(b);
-    try {
-      localStorage.setItem("brand", b);
-    } catch {
-      // sin almacenamiento: no se recuerda la marca elegida
-    }
-  };
+  const brand = useBrand();
+  const pick = setBrand;
   const info = BRANDS[brand];
   return (
     <>

@@ -34,6 +34,16 @@ export const BRANDS = {
 } as const;
 export type BrandId = keyof typeof BRANDS;
 
+// Pasa un diseño a los colores de una marca: acento y resplandor de cada escena.
+export const applyBrand = (d: Design, id: BrandId): Design => {
+  const accent = BRANDS[id].accent;
+  return {
+    ...d,
+    accent,
+    scenes: d.scenes.map((sc) => ({ ...sc, background: sc.background.kind === "glow" ? { ...sc.background, color: accent } : sc.background })),
+  };
+};
+
 export const defaultBackground = (): Background => ({
   kind: "glow",
   color: BRAND.red,
