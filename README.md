@@ -5,6 +5,7 @@ Videos promocionales hechos con [Remotion](https://www.remotion.dev/) (React →
 ## En la web
 
 - **Editor de animaciones (tipo Canva):** https://alejagoguti-cpu.github.io/animaciones/
+- **Creador de landing:** https://alejagoguti-cpu.github.io/animaciones/landing.html (código en `web/landing.html`, HTML puro). Edita título, subtítulo, botón, foto (subir o enlace, forma, zoom, posición), animaciones de entrada y en movimiento, colores, tarjetas y formulario de contacto; también se escribe directo sobre la vista previa. Se guarda en el navegador y se descarga como un solo `landing.html`.
 - **Remotion Studio (video original):** https://alejagoguti-cpu.github.io/animaciones/studio/
 
 Se publican solos cada vez que se sube un cambio a `main` (ver `.github/workflows/pages.yml`).
