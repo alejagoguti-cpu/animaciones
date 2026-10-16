@@ -84,6 +84,9 @@ var BRANDS = {
   aleja: { accent: "#00b7cb", bg: "#000000", font: "Michroma", logo: "aleja" }
 };
 
+var ICONS = [["none", "Sin icono"], ["g:↓", "Flecha abajo ↓"], ["g:↑", "Flecha arriba ↑"], ["g:◎", "Diana ◎"], ["g:✓", "Check ✓"], ["g:$", "Dólar $"], ["g:★", "Estrella ★"], ["g:⚡", "Rayo ⚡"], ["g:✉", "Sobre ✉"], ["g:♥", "Corazón ♥"], ["g:➜", "Flecha ➜"],
+  ["assets/iconos/moneda-dolar-plata.png", "Moneda dólar (plata)"], ["assets/iconos/moneda-dolar-roja.png", "Moneda dólar (roja)"], ["assets/iconos/moneda-euro-plata.png", "Moneda euro (plata)"], ["assets/iconos/moneda-euro-roja.png", "Moneda euro (roja)"], ["assets/iconos/moneda-libra-plata.png", "Moneda libra"], ["assets/iconos/moneda-yuan-plata.png", "Moneda yuan (plata)"], ["assets/iconos/moneda-yuan-roja.png", "Moneda yuan (roja)"], ["assets/iconos/moneda-usdc-plata.png", "Moneda USDC"], ["assets/iconos/badge-pago-recibido.png", "Pago recibido"], ["assets/iconos/notificacion-whatsapp-bitaxus.png", "Notificación WhatsApp"]];
+
 var DEFAULTS = {
   brand: "bitaxus", brandName: "Bitaxus", kicker: "Bitaxus", headline: "Cobra, paga y entiende tu dinero desde WhatsApp.",
   sub: "Programa recaudos, organiza pagos y decide con más claridad, sin otra aplicación.",
@@ -92,6 +95,7 @@ var DEFAULTS = {
   theme: "dark", accent: "#c1121f", bg: "#000000", font: "Belamor",
   aKick: "fadeup", aHead: "words", aSub: "fadeup", aPhoto: "zoom", aCta: "fadeup",
   aLoop: "float", aBtn: "shine", speed: 100, bgAnim: true, reveal: true, tilt: true,
+  f0i: "g:↓", f1i: "g:↑", f2i: "g:◎", f0c: "", f1c: "", f2c: "",
   f0t: "Recaudos", f0d: "Programa y registra los pagos que esperas recibir.",
   f1t: "Pagos y dispersiones", f1d: "Organiza pagos individuales o múltiples.",
   f2t: "Decisiones más claras", f2d: "Ordena tus movimientos y decide mejor.",
@@ -261,7 +265,8 @@ function build(s, edit, base) {
     ".feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;padding:4vw 6vw}",
     ".fc{padding:28px;border-radius:22px;background:var(--card);border:1px solid var(--ln)}",
     ".fc b{display:block;font-size:20px;margin-bottom:8px}.fc span{color:var(--mut);line-height:1.6;font-size:15px}",
-    ".fc em{display:block;width:38px;height:38px;border-radius:12px;background:var(--ac);margin-bottom:16px;opacity:.9}",
+    ".fc em{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:14px;background:var(--ac);color:#fff;font-style:normal;font-weight:700;font-size:24px;margin-bottom:16px}",
+    ".fc .ic{display:block;height:56px;max-width:110px;width:auto;object-fit:contain;margin-bottom:14px}",
     "#contacto{padding:5vw 6vw 7vw;display:flex;justify-content:center}",
     ".box{width:min(100%,560px);padding:34px;border-radius:26px;background:var(--card);border:1px solid var(--ln)}",
     ".box h2{margin:0 0 18px;font-size:30px}",
@@ -294,9 +299,16 @@ function build(s, edit, base) {
     css.push(".an-" + n + "{animation:" + n + " calc(.9s*var(--spd)) cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--d,0s)*var(--spd))}");
   });
 
+  var iconHtml = function (i) {
+    var c = (s["f" + i + "c"] || "").trim(), v = s["f" + i + "i"] || "none";
+    if (c) return "<em>" + esc(c) + "</em>";
+    if (v === "none") return "";
+    if (v.indexOf("g:") === 0) return "<em>" + esc(v.slice(2)) + "</em>";
+    return '<img class="ic" alt="" src="' + esc(U(v)) + '">';
+  };
   var rv = s.reveal ? " rv" : "";
   var feats = [0, 1, 2].map(function (i) {
-    return '<div class="fc' + rv + '" style="transition-delay:' + (i * 0.12).toFixed(2) + 's"><em></em><b data-k="f' + i + 't">' + esc(s["f" + i + "t"]) + '</b><span data-k="f' + i + 'd">' + esc(s["f" + i + "d"]) + "</span></div>";
+    return '<div class="fc' + rv + '" style="transition-delay:' + (i * 0.12).toFixed(2) + 's">' + iconHtml(i) + '<b data-k="f' + i + 't">' + esc(s["f" + i + "t"]) + '</b><span data-k="f' + i + 'd">' + esc(s["f" + i + "d"]) + "</span></div>";
   }).join("");
 
   var fields = "";
@@ -371,7 +383,7 @@ var SECS = [
     { k: "font", l: "Tipografía de titulares", ty: "sel", o: [["Belamor", "Belamor (Bitaxus)"], ["Montserrat", "Montserrat"], ["Michroma", "Michroma (Alejandra)"]] }
   ] },
   { t: "Tarjetas", f: [0, 1, 2].reduce(function (a, i) {
-    return a.concat([{ k: "f" + i + "t", l: "Tarjeta " + (i + 1) + " – título", ty: "text", live: 1 }, { k: "f" + i + "d", l: "Tarjeta " + (i + 1) + " – texto", ty: "area", live: 1 }]);
+    return a.concat([{ k: "f" + i + "i", l: "Tarjeta " + (i + 1) + " – icono", ty: "sel", o: ICONS }, { k: "f" + i + "c", l: "Tarjeta " + (i + 1) + " – o escribe tu icono (emoji o letra)", ty: "text" }, { k: "f" + i + "t", l: "Tarjeta " + (i + 1) + " – título", ty: "text", live: 1 }, { k: "f" + i + "d", l: "Tarjeta " + (i + 1) + " – texto", ty: "area", live: 1 }]);
   }, []) },
   { t: "Formulario de contacto", f: [
     { k: "showForm", l: "Mostrar formulario", ty: "chk" },
