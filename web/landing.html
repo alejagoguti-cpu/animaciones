@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Creador de landing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Michroma&family=Playfair+Display:wght@600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Michroma&display=swap" rel="stylesheet">
 <style>
 :root{--pn:#111114;--pn2:#1a1a1f;--ln:rgba(255,255,255,.1);--tx:#f2f2f4;--mu:#9a9aa5;--ac:#ff3b30}
 *{box-sizing:border-box}
@@ -33,7 +33,10 @@ input[type=checkbox]{accent-color:var(--ac);width:18px;height:18px}
 .btn.g{background:#26262d}
 .btn:hover{filter:brightness(1.12)}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
-.thumb{width:100%;height:120px;border-radius:10px;background:#0b0b0e center/cover no-repeat;border:1px solid var(--ln)}
+.gal{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:190px;overflow:auto}
+.gt{aspect-ratio:1;border:1px solid var(--ln);border-radius:8px;background:#000 center/contain no-repeat;cursor:pointer;padding:0}
+.gt:hover{outline:2px solid var(--ac)}
+.thumb{background-size:contain!important;width:100%;height:120px;border-radius:10px;background:#0b0b0e center/cover no-repeat;border:1px solid var(--ln)}
 main{flex:1;display:flex;flex-direction:column;min-width:0}
 .bar{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--ln);background:var(--pn)}
 .bar .sp{flex:1}
@@ -69,29 +72,34 @@ iframe{border:1px solid var(--ln);border-radius:12px;background:#000;width:100%;
 
 <script>
 /* ---------- Estado ---------- */
-var PLACE = "data:image/svg+xml," + encodeURIComponent(
-  "<svg xmlns='http://www.w3.org/2000/svg' width='900' height='1100' viewBox='0 0 900 1100'>" +
-  "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#ff3b30'/><stop offset='1' stop-color='#3a0a40'/></linearGradient></defs>" +
-  "<rect width='900' height='1100' fill='url(#g)'/>" +
-  "<circle cx='640' cy='320' r='170' fill='rgba(255,255,255,.18)'/><circle cx='260' cy='820' r='260' fill='rgba(0,0,0,.25)'/>" +
-  "<text x='450' y='580' font-family='sans-serif' font-size='54' font-weight='700' fill='white' text-anchor='middle'>Sube tu foto</text></svg>");
+/* Recursos de la marca que ya existen en el repo (public/) */
+var PLACE = "assets/piezas/hero-pago-recibido.png";
+var LOGOS = {
+  bitaxus: "logo.png",
+  aleja: "assets/aleja/nombre-turquesa.png",
+  alejaIcon: "assets/aleja/icono-turquesa.png"
+};
+var BRANDS = {
+  bitaxus: { accent: "#c1121f", bg: "#000000", font: "Belamor", logo: "bitaxus" },
+  aleja: { accent: "#00b7cb", bg: "#000000", font: "Michroma", logo: "aleja" }
+};
 
 var DEFAULTS = {
-  brandName: "Bitaxus", kicker: "Novedad", headline: "Tu idea merece una página que se mueva",
-  sub: "Cambia este texto, sube tu foto y elige cómo entra cada cosa. En un minuto tienes una landing viva.",
-  cta: "Quiero empezar", link: "#contacto",
-  photo: "", photoShape: "rounded", photoZoom: 100, photoX: 50, photoY: 50, layout: "right", overlay: 55,
-  theme: "dark", accent: "#ff3b30", bg: "#0a0a0c", font: "Montserrat",
+  brand: "bitaxus", brandName: "Bitaxus", kicker: "Bitaxus", headline: "Cobra, paga y entiende tu dinero desde WhatsApp.",
+  sub: "Programa recaudos, organiza pagos y decide con más claridad, sin otra aplicación.",
+  cta: "Hablemos →", link: "#contacto",
+  photo: "", photoShape: "free", photoZoom: 100, photoX: 50, photoY: 50, layout: "right", overlay: 55,
+  theme: "dark", accent: "#c1121f", bg: "#000000", font: "Belamor",
   aKick: "fadeup", aHead: "words", aSub: "fadeup", aPhoto: "zoom", aCta: "fadeup",
   aLoop: "float", aBtn: "shine", speed: 100, bgAnim: true, reveal: true, tilt: true,
-  f0t: "Rápido", f0d: "Escribe y ves el resultado al instante.",
-  f1t: "Con movimiento", f1d: "Entradas, flotados y efectos al hacer scroll.",
-  f2t: "Tuyo", f2d: "Colores, fuente y foto a tu medida.",
+  f0t: "Recaudos", f0d: "Programa y registra los pagos que esperas recibir.",
+  f1t: "Pagos y dispersiones", f1d: "Organiza pagos individuales o múltiples.",
+  f2t: "Decisiones más claras", f2d: "Ordena tus movimientos y decide mejor.",
   showForm: true, formTitle: "Hablemos", formBtn: "Enviar", formThanks: "¡Gracias! Te escribimos pronto.",
   formEmail: "", fName: true, fMail: true, fMsg: true,
-  footer: "© 2026 Tu marca. Todos los derechos reservados."
+  footer: "bitaxus.com"
 };
-var KEY = "bitaxus-landing-v1";
+var KEY = "bitaxus-landing-v2";
 var S = {};
 try { S = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { S = {}; }
 for (var dk in DEFAULTS) { if (S[dk] === undefined) S[dk] = DEFAULTS[dk]; }
@@ -176,19 +184,26 @@ function docScript(EDIT) {
   }
 }
 
-function build(s, edit) {
+function build(s, edit, base) {
+  base = base || "";
+  var U = function (p) { return (p.indexOf("http") === 0 || p.indexOf("data:") === 0) ? p : base + p; };
   var spd = (100 / Math.max(30, s.speed)).toFixed(2);
   var light = s.theme === "light";
   var fg = light ? "#15151a" : "#ffffff";
   var mut = light ? "rgba(21,21,26,.66)" : "rgba(255,255,255,.66)";
   var card = light ? "rgba(0,0,0,.05)" : "rgba(255,255,255,.06)";
   var line = light ? "rgba(0,0,0,.12)" : "rgba(255,255,255,.12)";
-  var fontCss = s.font === "Playfair Display" ? "'Playfair Display',Georgia,serif" :
-                s.font === "Michroma" ? "Michroma,sans-serif" :
-                s.font === "Georgia" ? "Georgia,serif" : "Montserrat,system-ui,sans-serif";
-  var shapes = { rounded: "28px", circle: "50%", arch: "999px 999px 28px 28px", blob: "60% 40% 30% 70% / 60% 30% 70% 40%", square: "0" };
-  var radius = shapes[s.photoShape] || "28px";
-  var img = s.photo || PLACE;
+  var fontCss = s.font === "Belamor" ? "Belamor,Montserrat,sans-serif" :
+                s.font === "Michroma" ? "Michroma,Montserrat,sans-serif" : "Montserrat,system-ui,sans-serif";
+  var shapes = { free: "0", rounded: "28px", circle: "50%", arch: "999px 999px 28px 28px", square: "0" };
+  var radius = shapes[s.photoShape] || "0";
+  var free = s.photoShape === "free";
+  var img = U(s.photo || PLACE);
+  var logoSrc = s.brand === "text" ? "" : U(LOGOS[s.brand] || LOGOS.bitaxus);
+  var fontFaces = ["Regular:400", "Medium:500", "SemiBold:600", "Bold:700"].map(function (x) {
+    var p = x.split(":");
+    return "@font-face{font-family:Belamor;src:url('" + U("fonts/Belamor-" + p[0] + ".otf") + "') format('opentype');font-weight:" + p[1] + "}";
+  }).join(LF);
   var an = function (n) { return n === "none" ? "" : " an-" + n; };
 
   var head = "";
@@ -200,9 +215,13 @@ function build(s, edit) {
   } else { head = esc(s.headline); }
 
   var css = [
+    fontFaces,
     ":root{--ac:" + s.accent + ";--bg:" + s.bg + ";--fg:" + fg + ";--mut:" + mut + ";--card:" + card + ";--ln:" + line + ";--spd:" + spd + ";--font:" + fontCss + "}",
     "*{box-sizing:border-box}html{scroll-behavior:smooth}",
-    "body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);overflow-x:hidden}",
+    "body{margin:0;background:var(--bg);color:var(--fg);font-family:Montserrat,system-ui,sans-serif;overflow-x:hidden}",
+    "h1,h2,.fc b,.brand{font-family:var(--font)}",
+    "body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(" + (light ? "rgba(0,0,0,.09)" : "rgba(255,255,255,.08)") + " 1.2px,transparent 1.2px) 0 0/28px 28px}",
+    ".brand img{height:34px;width:auto;display:block}",
     "a{color:inherit}",
     ".glow{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}",
     ".glow i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.45;background:var(--ac)}",
@@ -222,7 +241,7 @@ function build(s, edit) {
     "h1 .w{display:inline-block}",
     ".sub{font-size:clamp(16px,1.5vw,20px);line-height:1.6;color:var(--mut);margin:0 0 30px;max-width:560px}",
     ".hero.center .sub{margin-left:auto;margin-right:auto}",
-    ".cta{display:inline-block;position:relative;overflow:hidden;padding:15px 30px;border-radius:99px;background:var(--ac);color:#fff;text-decoration:none;font-weight:600;font-size:16px;box-shadow:0 10px 36px -8px var(--ac)}",
+    ".cta{display:inline-block;position:relative;overflow:hidden;padding:16px 36px;border-radius:30px;border:3px solid rgba(255,255,255,.5);background:linear-gradient(115deg,color-mix(in srgb,var(--ac) 55%,transparent) 0%,color-mix(in srgb,var(--ac) 30%,#000) 45%,rgba(0,0,0,.38) 100%);backdrop-filter:blur(14px);color:#fff;text-decoration:none;font-weight:700;font-size:17px;box-shadow:0 0 50px color-mix(in srgb,var(--ac) 40%,transparent)}",
     s.aBtn === "shine" ? ".cta::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:shine calc(2.8s*var(--spd)) ease-in-out infinite}" : "",
     s.aBtn === "pulse" ? ".cta{animation:pulse calc(1.8s*var(--spd)) ease-in-out infinite}" : "",
     s.aBtn === "bounce" ? ".cta{animation:bounce calc(1.6s*var(--spd)) ease-in-out infinite}" : "",
@@ -233,8 +252,8 @@ function build(s, edit) {
     s.aLoop === "sway" ? ".loop{animation:sway calc(6s*var(--spd)) ease-in-out infinite}" : "",
     s.aLoop === "breathe" ? ".loop{animation:breathe calc(4.5s*var(--spd)) ease-in-out infinite}" : "",
     s.aLoop === "spin" ? ".loop{animation:sway calc(3s*var(--spd)) ease-in-out infinite}" : "",
-    ".frame{aspect-ratio:4/5;overflow:hidden;border-radius:" + radius + ";box-shadow:0 30px 80px -20px var(--ac),0 0 0 1px var(--ln);transition:transform .15s ease-out;background:#000}",
-    ".frame img{width:100%;height:100%;object-fit:cover;display:block;object-position:" + s.photoX + "% " + s.photoY + "%;transform:scale(" + (s.photoZoom / 100) + ")}",
+    free ? ".loop{width:min(100%,620px)}.frame{transition:transform .15s ease-out}.frame img{width:100%;height:auto;display:block;transform:scale(" + (s.photoZoom / 100) + ")}" :
+    ".frame{aspect-ratio:4/5;overflow:hidden;border-radius:" + radius + ";box-shadow:0 30px 80px -20px var(--ac),0 0 0 1px var(--ln);transition:transform .15s ease-out;background:#000}.frame img{width:100%;height:100%;object-fit:cover;display:block;object-position:" + s.photoX + "% " + s.photoY + "%;transform:scale(" + (s.photoZoom / 100) + ")}",
     ".hero.bg{position:relative;text-align:center;justify-items:center;grid-template-columns:1fr;min-height:92vh}",
     ".hero.bg .txt{max-width:760px;position:relative;z-index:2}.hero.bg .sub{margin-left:auto;margin-right:auto}",
     ".bgimg{position:absolute;inset:0;z-index:0;background:url('" + img.split("'").join("%27") + "') " + s.photoX + "% " + s.photoY + "%/cover no-repeat}",
@@ -294,7 +313,7 @@ function build(s, edit) {
 
   var body =
     '<div class="glow"><i></i><i></i></div>' +
-    '<nav><div class="brand" data-k="brandName">' + esc(s.brandName) + '</div><a class="navb" href="#contacto">' + "Contacto" + "</a></nav>" +
+    '<nav>' + (logoSrc ? '<div class="brand"><img alt="' + esc(s.brandName) + '" src="' + esc(logoSrc) + '"></div>' : '<div class="brand" data-k="brandName">' + esc(s.brandName) + "</div>") + '<a class="navb" href="#contacto">' + "Contacto" + "</a></nav>" +
     '<section class="hero ' + layoutCls + '">' + (isBg ? '<div class="bgimg"></div>' : "") +
     '<div class="txt"><div class="kick' + an(s.aKick) + '" data-k="kicker" style="--d:0s">' + esc(s.kicker) + "</div>" +
     "<h1" + (s.aHead !== "words" ? ' class="' + an(s.aHead).trim() + '" style="--d:.15s"' : "") + ' data-k="headline">' + head + "</h1>" +
@@ -307,7 +326,7 @@ function build(s, edit) {
   var script = "(" + docScript.toString() + ")(" + (edit ? "true" : "false") + ");";
   return "<!doctype html>" + LF + '<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
     "<title>" + esc(s.brandName) + "</title>" +
-    '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Michroma&family=Playfair+Display:wght@600;800&display=swap" rel="stylesheet">' +
+    '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Michroma&display=swap" rel="stylesheet">' +
     "<style>" + css.join(LF) + "</style></head><body>" + body + "<script>" + script + "<" + "/script></body></html>";
 }
 
@@ -315,7 +334,7 @@ function build(s, edit) {
 var AN = [["none", "Sin animación"], ["fadeup", "Subir y aparecer"], ["fadein", "Aparecer"], ["zoom", "Zoom"], ["left", "Desde la izquierda"], ["right", "Desde la derecha"], ["blur", "Desenfoque"], ["flip", "Voltear"]];
 var SECS = [
   { t: "Textos", open: true, f: [
-    { k: "brandName", l: "Nombre / logo", ty: "text", live: 1 },
+    { k: "brandName", l: "Nombre (si no usas logo)", ty: "text", live: 1 },
     { k: "kicker", l: "Etiqueta pequeña", ty: "text", live: 1 },
     { k: "headline", l: "Título principal", ty: "area" },
     { k: "sub", l: "Subtítulo", ty: "area", live: 1 },
@@ -325,7 +344,7 @@ var SECS = [
   { t: "Foto", open: true, f: [
     { ty: "photo" },
     { k: "layout", l: "Distribución", ty: "sel", o: [["right", "Foto a la derecha"], ["left", "Foto a la izquierda"], ["center", "Foto abajo, centrada"], ["bg", "Foto de fondo"]] },
-    { k: "photoShape", l: "Forma", ty: "sel", o: [["rounded", "Redondeada"], ["circle", "Círculo"], ["arch", "Arco"], ["blob", "Orgánica"], ["square", "Cuadrada"]] },
+    { k: "photoShape", l: "Forma", ty: "sel", o: [["free", "Recorte libre (sin marco)"], ["rounded", "Redondeada"], ["circle", "Círculo"], ["arch", "Arco"], ["square", "Cuadrada"]] },
     { k: "photoZoom", l: "Zoom", ty: "rng", min: 100, max: 220 },
     { k: "photoX", l: "Posición horizontal", ty: "rng", min: 0, max: 100 },
     { k: "photoY", l: "Posición vertical", ty: "rng", min: 0, max: 100 },
@@ -345,10 +364,11 @@ var SECS = [
     { k: "reveal", l: "Aparecer al hacer scroll", ty: "chk" }
   ] },
   { t: "Estilo", f: [
+    { k: "brand", l: "Marca", ty: "brand" },
     { k: "theme", l: "Tema", ty: "sel", o: [["dark", "Oscuro"], ["light", "Claro"]] },
     { k: "accent", l: "Color de acento", ty: "col" },
     { k: "bg", l: "Color de fondo", ty: "col" },
-    { k: "font", l: "Tipografía", ty: "sel", o: [["Montserrat", "Montserrat"], ["Michroma", "Michroma"], ["Playfair Display", "Playfair Display"], ["Georgia", "Georgia"]] }
+    { k: "font", l: "Tipografía de titulares", ty: "sel", o: [["Belamor", "Belamor (Bitaxus)"], ["Montserrat", "Montserrat"], ["Michroma", "Michroma (Alejandra)"]] }
   ] },
   { t: "Tarjetas", f: [0, 1, 2].reduce(function (a, i) {
     return a.concat([{ k: "f" + i + "t", l: "Tarjeta " + (i + 1) + " – título", ty: "text", live: 1 }, { k: "f" + i + "d", l: "Tarjeta " + (i + 1) + " – texto", ty: "area", live: 1 }]);
@@ -366,6 +386,7 @@ var SECS = [
   { t: "Pie de página", f: [{ k: "footer", l: "Texto", ty: "text", live: 1 }] }
 ];
 
+var EXPORT_BASE = new URL(".", location.href).href;
 var panel = document.getElementById("panel");
 var pv = document.getElementById("pv");
 var inputs = {};
@@ -376,8 +397,31 @@ function mkField(f) {
     w = document.createElement("div");
     w.className = "sec0";
     w.style.display = "grid"; w.style.gap = "10px";
-    w.innerHTML = '<div class="thumb" id="thumb"></div><div class="btns"><button class="btn" id="bUp">Subir foto</button><button class="btn g" id="bUrl">Usar enlace</button><button class="btn g" id="bNoPh">Quitar</button></div>' +
+    w.innerHTML = '<div class="thumb" id="thumb"></div><div class="btns"><button class="btn" id="bUp">Subir foto</button><button class="btn g" id="bUrl">Usar enlace</button><button class="btn g" id="bNoPh">Hero Bitaxus</button></div>' +
+      '<label>Imágenes de la marca</label><div class="gal" id="gal"></div>' +
       '<input type="file" id="file" accept="image/*" hidden>';
+    return w;
+  }
+  if (f.ty === "brand") {
+    w = document.createElement("label");
+    var bs = document.createElement("select");
+    [["bitaxus", "Bitaxus (rojo, Belamor)"], ["aleja", "Alejandra Torres (turquesa, Michroma)"], ["text", "Solo texto, sin logo"]].forEach(function (o) {
+      var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; bs.appendChild(op);
+    });
+    bs.value = S.brand;
+    var bsp = document.createElement("span"); bsp.textContent = f.l;
+    w.appendChild(bsp); w.appendChild(bs);
+    bs.addEventListener("change", function () {
+      S.brand = bs.value;
+      var p = BRANDS[bs.value];
+      if (p) {
+        S.accent = p.accent; S.bg = p.bg; S.font = p.font;
+        inputs.accent.value = p.accent; inputs.bg.value = p.bg; inputs.font.value = p.font;
+        S.brandName = bs.value === "aleja" ? "Alejandra Torres" : "Bitaxus";
+        inputs.brandName.value = S.brandName;
+      }
+      save(); render();
+    });
     return w;
   }
   w = document.createElement("label");
@@ -462,6 +506,16 @@ document.getElementById("bUrl").onclick = function () {
 };
 document.getElementById("bNoPh").onclick = function () { S.photo = ""; save(); refreshThumb(); render(); };
 refreshThumb();
+fetch("assets/manifest.json").then(function (r) { return r.json(); }).then(function (m) {
+  var g = document.getElementById("gal");
+  m.filter(function (x) { return x.type === "image" && x.category !== "logos"; }).forEach(function (x) {
+    var b = document.createElement("button");
+    b.className = "gt"; b.title = x.name;
+    b.style.backgroundImage = "url('" + x.file + "')";
+    b.onclick = function () { S.photo = x.file; save(); refreshThumb(); render(); };
+    g.appendChild(b);
+  });
+}).catch(function () { });
 
 /* ---------- Barra ---------- */
 function toast(m) {
@@ -475,14 +529,14 @@ document.getElementById("bView").onclick = function () {
   this.textContent = m ? "🖥 Vista escritorio" : "📱 Vista móvil";
 };
 document.getElementById("bDown").onclick = function () {
-  var blob = new Blob([build(S, false)], { type: "text/html" });
+  var blob = new Blob([build(S, false, EXPORT_BASE)], { type: "text/html" });
   var a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "landing.html";
   document.body.appendChild(a); a.click(); a.remove();
   toast("Descargada: ábrela o súbela a tu hosting");
 };
 document.getElementById("bCopy").onclick = function () {
-  var h = build(S, false);
+  var h = build(S, false, EXPORT_BASE);
   if (navigator.clipboard) navigator.clipboard.writeText(h).then(function () { toast("HTML copiado"); });
 };
 document.getElementById("bReset").onclick = function () {
